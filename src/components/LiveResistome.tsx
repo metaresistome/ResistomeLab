@@ -1,50 +1,50 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { isSnapshotMode } from '@/lib/snapshot'
 
 /**
- * "Live Resistome" — a continuous, generative AMR simulation.
- *
- * Bacteria swim between three One Health zones (human, animal, environment,
- * drawn as shimmering dotted silhouettes). Periodically a wave of antibiotic
- * molecules sweeps the field: susceptible (mint) bacteria touched by a
- * molecule die, while resistant (amber) bacteria survive, multiply — and pass
- * their resistance to neighbours on contact (a conjugation flash). Over time
- * the population turns amber; then fresh susceptible lineages immigrate and
- * the cycle of selection begins again. Motion trails, glow, pointer repulsion.
+ * "Morphing Resistome" — a glowing particle swarm that coalesces into a
+ * human silhouette, morphs into an animal paw, then a leaf, then dissolves
+ * into a free-floating constellation (One Health network) before re-forming.
+ * Mint particles are the microbial world; amber ones are resistance.
+ * Pointer repels the swarm.
  */
 
-type Bac = {
+type Pt = { x: number; y: number }
+
+type Particle = {
   x: number
   y: number
-  angle: number
-  speed: number
+  vx: number
+  vy: number
+  targets: Pt[] // [human, animal, environment]
+  amber: boolean
   size: number
-  resistant: boolean
-  hp: number
-  wobble: number
-  tx: number
-  ty: number
-  retarget: number
+  tw: number
 }
 
-type Drug = { x: number; y: number; vx: number; vy: number; spin: number }
+type Seg = { label: string; mode: 'gather' | 'hold' | 'net'; shape?: number; dur: number }
 
-type Flash = { x: number; y: number; t: number }
+const SEGMENTS: Seg[] = [
+  { label: 'HUMANS', mode: 'gather', shape: 0, dur: 1900 },
+  { label: 'HUMANS', mode: 'hold', shape: 0, dur: 3400 },
+  { label: 'ANIMALS', mode: 'gather', shape: 1, dur: 1900 },
+  { label: 'ANIMALS', mode: 'hold', shape: 1, dur: 3400 },
+  { label: 'ENVIRONMENTS', mode: 'gather', shape: 2, dur: 1900 },
+  { label: 'ENVIRONMENTS', mode: 'hold', shape: 2, dur: 3400 },
+  { label: 'ONE HEALTH', mode: 'net', dur: 4600 },
+]
+const TOTAL = SEGMENTS.reduce((a, s) => a + s.dur, 0)
 
-type Zone = {
-  x: number
-  y: number
-  r: number
-  dots: { x: number; y: number }[]
-  resFrac: number
+function segAt(el: number): { seg: Seg; local: number } {
+  let acc = 0
+  for (const s of SEGMENTS) {
+    if (el < acc + s.dur) return { seg: s, local: el - acc }
+    acc += s.dur
+  }
+  return { seg: SEGMENTS[SEGMENTS.length - 1], local: SEGMENTS[SEGMENTS.length - 1].dur }
 }
 
-const SUSC = ['#b9f2e7', '#93e9d9', '#d2f7ef']
-const RES = ['#f5a85e', '#ec8c46', '#ffcf82']
-const BG = 'rgba(14, 52, 53, 0.3)' // motion-trail fade; matches --primary
-
-/** Draw a silhouette on an offscreen canvas and sample it into dots. */
-function sampleShape(draw: (c: CanvasRenderingContext2D, s: number) => void, size: number) {
+function sampleShape(draw: (c: CanvasRenderingContext2D, s: number) => void, size: number, count: number): Pt[] {
   const off = document.createElement('canvas')
   off.width = size
   off.height = size
@@ -53,51 +53,57 @@ function sampleShape(draw: (c: CanvasRenderingContext2D, s: number) => void, siz
   c.strokeStyle = '#fff'
   draw(c, size)
   const img = c.getImageData(0, 0, size, size).data
-  const pts: { x: number; y: number }[] = []
-  const stride = 3
-  for (let y = 0; y < size; y += stride) {
-    for (let x = 0; x < size; x += stride) {
+  const pts: Pt[] = []
+  for (let y = 0; y < size; y += 2) {
+    for (let x = 0; x < size; x += 2) {
       if (img[(y * size + x) * 4 + 3] > 120) pts.push({ x: x / size - 0.5, y: y / size - 0.5 })
     }
   }
-  return pts
+  for (let i = pts.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[pts[i], pts[j]] = [pts[j], pts[i]]
+  }
+  const picked: Pt[] = []
+  const step = Math.max(1, Math.floor(pts.length / count))
+  for (let i = 0; i < pts.length && picked.length < count; i += step) picked.push(pts[i])
+  return picked
 }
 
 function humanShape(c: CanvasRenderingContext2D, s: number) {
   const u = s / 100
   c.beginPath()
-  c.arc(50 * u, 16 * u, 10 * u, 0, Math.PI * 2)
+  c.arc(50 * u, 15 * u, 10.5 * u, 0, Math.PI * 2)
   c.fill()
   c.beginPath()
-  c.roundRect(38 * u, 28 * u, 24 * u, 34 * u, 10 * u)
+  c.roundRect(37 * u, 27 * u, 26 * u, 36 * u, 11 * u)
   c.fill()
-  c.lineWidth = 6.5 * u
+  c.lineWidth = 7 * u
   c.lineCap = 'round'
   c.beginPath()
-  c.moveTo(41 * u, 34 * u)
-  c.lineTo(30 * u, 56 * u)
-  c.moveTo(59 * u, 34 * u)
-  c.lineTo(70 * u, 56 * u)
+  c.moveTo(40 * u, 34 * u)
+  c.lineTo(28 * u, 58 * u)
+  c.moveTo(60 * u, 34 * u)
+  c.lineTo(72 * u, 58 * u)
   c.stroke()
-  c.lineWidth = 7 * u
+  c.lineWidth = 7.5 * u
   c.beginPath()
-  c.moveTo(45 * u, 60 * u)
-  c.lineTo(43 * u, 86 * u)
-  c.moveTo(55 * u, 60 * u)
-  c.lineTo(57 * u, 86 * u)
+  c.moveTo(44.5 * u, 62 * u)
+  c.lineTo(42 * u, 88 * u)
+  c.moveTo(55.5 * u, 62 * u)
+  c.lineTo(58 * u, 88 * u)
   c.stroke()
 }
 
 function pawShape(c: CanvasRenderingContext2D, s: number) {
   const u = s / 100
   c.beginPath()
-  c.ellipse(50 * u, 62 * u, 17 * u, 13 * u, 0, 0, Math.PI * 2)
+  c.ellipse(50 * u, 63 * u, 18 * u, 14 * u, 0, 0, Math.PI * 2)
   c.fill()
   const toes: [number, number, number][] = [
-    [26, 42, 7.5],
-    [42, 30, 8],
-    [58, 30, 8],
-    [74, 42, 7.5],
+    [25, 42, 8],
+    [41.5, 29, 8.5],
+    [58.5, 29, 8.5],
+    [75, 42, 8],
   ]
   for (const [x, y, r] of toes) {
     c.beginPath()
@@ -109,22 +115,37 @@ function pawShape(c: CanvasRenderingContext2D, s: number) {
 function leafShape(c: CanvasRenderingContext2D, s: number) {
   const u = s / 100
   c.save()
-  c.translate(50 * u, 52 * u)
+  c.translate(50 * u, 50 * u)
   c.rotate(-Math.PI / 4)
   c.beginPath()
-  c.ellipse(0, 0, 26 * u, 15 * u, 0, 0, Math.PI * 2)
+  c.ellipse(0, 0, 28 * u, 16 * u, 0, 0, Math.PI * 2)
   c.fill()
   c.restore()
-  c.lineWidth = 4 * u
+  c.lineWidth = 4.5 * u
   c.lineCap = 'round'
   c.beginPath()
-  c.moveTo(66 * u, 68 * u)
-  c.quadraticCurveTo(74 * u, 78 * u, 78 * u, 88 * u)
+  c.moveTo(67 * u, 67 * u)
+  c.quadraticCurveTo(75 * u, 78 * u, 79 * u, 89 * u)
   c.stroke()
+}
+
+function makeGlow(r: number, g: number, b: number): HTMLCanvasElement {
+  const c = document.createElement('canvas')
+  c.width = 64
+  c.height = 64
+  const ctx = c.getContext('2d')!
+  const grad = ctx.createRadialGradient(32, 32, 0, 32, 32, 32)
+  grad.addColorStop(0, `rgba(255,255,255,0.95)`)
+  grad.addColorStop(0.25, `rgba(${r},${g},${b},0.85)`)
+  grad.addColorStop(1, `rgba(${r},${g},${b},0)`)
+  ctx.fillStyle = grad
+  ctx.fillRect(0, 0, 64, 64)
+  return c
 }
 
 export function LiveResistome({ className = '' }: { className?: string }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const [label, setLabel] = useState('HUMANS')
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -136,29 +157,18 @@ export function LiveResistome({ className = '' }: { className?: string }) {
     let running = true
     let width = 0
     let height = 0
-    let bacs: Bac[] = []
-    let drugs: Drug[] = []
-    let flashes: Flash[] = []
-    let zones: Zone[] = []
-    let lastWave = 0
-    let waveDir = 0
+    let particles: Particle[] = []
+    let lastLabel = ''
     const start = performance.now()
     const mouse = { x: -9999, y: -9999 }
 
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     const snapshot = isSnapshotMode()
     const dpr = Math.min(window.devicePixelRatio || 1, 2)
-    const CAP = 96
+    const BG = '#0e3435'
 
-    function pickTarget(): { x: number; y: number } {
-      if (Math.random() < 0.55 && zones.length) {
-        const z = zones[Math.floor(Math.random() * zones.length)]
-        const a = Math.random() * Math.PI * 2
-        const d = Math.sqrt(Math.random()) * z.r * 0.9
-        return { x: z.x + Math.cos(a) * d, y: z.y + Math.sin(a) * d }
-      }
-      return { x: Math.random() * width, y: Math.random() * height }
-    }
+    const glowMint = makeGlow(120, 226, 206)
+    const glowAmber = makeGlow(240, 168, 94)
 
     function build() {
       const rect = canvas!.parentElement!.getBoundingClientRect()
@@ -170,278 +180,136 @@ export function LiveResistome({ className = '' }: { className?: string }) {
       canvas!.style.height = `${height}px`
       ctx!.setTransform(dpr, 0, 0, dpr, 0, 0)
 
-      const r = Math.min(width, height) * 0.19
-      const defs = [
-        { fx: 0.5, fy: 0.26, shape: humanShape },
-        { fx: 0.24, fy: 0.74, shape: pawShape },
-        { fx: 0.76, fy: 0.74, shape: leafShape },
-      ]
-      zones = defs.map((d) => ({
-        x: d.fx * width,
-        y: d.fy * height,
-        r,
-        dots: sampleShape(d.shape, 100),
-        resFrac: 0.1,
+      const count = width < 480 ? 340 : 520
+      const box = Math.min(width, height) * 0.74
+      const cx = width / 2
+      const cy = height / 2 - height * 0.02
+      const shapes = [sampleShape(humanShape, 100, count), sampleShape(pawShape, 100, count), sampleShape(leafShape, 100, count)]
+
+      particles = Array.from({ length: count }, (_, i) => ({
+        x: cx + (Math.random() - 0.5) * width,
+        y: cy + (Math.random() - 0.5) * height,
+        vx: 0,
+        vy: 0,
+        targets: shapes.map((pts) => ({
+          x: cx + pts[i % pts.length].x * box,
+          y: cy + pts[i % pts.length].y * box,
+        })),
+        amber: Math.random() < 0.13,
+        size: 5 + Math.random() * 5,
+        tw: Math.random() * Math.PI * 2,
       }))
-
-      bacs = Array.from({ length: CAP }, () => {
-        const t = pickTarget()
-        return {
-          x: Math.random() * width,
-          y: Math.random() * height,
-          angle: Math.random() * Math.PI * 2,
-          speed: 0.35 + Math.random() * 0.4,
-          size: 2.2 + Math.random() * 1.8,
-          resistant: Math.random() < 0.08,
-          hp: 1,
-          wobble: Math.random() * 1000,
-          tx: t.x,
-          ty: t.y,
-          retarget: Math.random() * 200,
-        }
-      })
-      drugs = []
-      flashes = []
     }
 
-    function spawnWave(now: number) {
-      lastWave = now
-      waveDir = Math.floor(Math.random() * 4)
-      const n = 26
-      for (let i = 0; i < n; i++) {
-        if (waveDir === 0) drugs.push({ x: Math.random() * width, y: -10, vx: 0, vy: 0.9 + Math.random() * 0.5, spin: Math.random() * 6 })
-        if (waveDir === 1) drugs.push({ x: Math.random() * width, y: height + 10, vx: 0, vy: -(0.9 + Math.random() * 0.5), spin: Math.random() * 6 })
-        if (waveDir === 2) drugs.push({ x: -10, y: Math.random() * height, vx: 0.9 + Math.random() * 0.5, vy: 0, spin: Math.random() * 6 })
-        if (waveDir === 3) drugs.push({ x: width + 10, y: Math.random() * height, vx: -(0.9 + Math.random() * 0.5), vy: 0, spin: Math.random() * 6 })
+    function frame(now: number) {
+      const el = (now - start) % TOTAL
+      const { seg } = segAt(el)
+      if (seg.label !== lastLabel) {
+        lastLabel = seg.label
+        setLabel(seg.label)
       }
-    }
 
-    function drawPlus(d: Drug) {
-      ctx!.save()
-      ctx!.translate(d.x, d.y)
-      ctx!.rotate(d.spin)
-      ctx!.strokeStyle = '#f5c98a'
-      ctx!.shadowColor = '#e8894a'
-      ctx!.shadowBlur = 6
-      ctx!.lineWidth = 1.8
-      ctx!.lineCap = 'round'
-      const s = 4
-      ctx!.beginPath()
-      ctx!.moveTo(-s, 0)
-      ctx!.lineTo(s, 0)
-      ctx!.moveTo(0, -s)
-      ctx!.lineTo(0, s)
-      ctx!.stroke()
-      ctx!.restore()
-    }
-
-    function draw(now: number, animate: boolean) {
-      // motion trails: translucent fill instead of clear
-      ctx!.fillStyle = BG
+      // motion trails
+      ctx!.fillStyle = 'rgba(14, 52, 53, 0.32)'
       ctx!.fillRect(0, 0, width, height)
 
-      const el = now - start
-
-      // ── zones: shimmering silhouettes, tinted by local resistance ──
-      for (let zi = 0; zi < zones.length; zi++) {
-        const z = zones[zi]
-        // track resistance fraction inside zone
-        let inZone = 0
-        let resIn = 0
-        for (const b of bacs) {
-          const dx = b.x - z.x
-          const dy = b.y - z.y
-          if (dx * dx + dy * dy < z.r * z.r) {
-            inZone++
-            if (b.resistant) resIn++
-          }
+      // physics
+      const gatherK = seg.mode === 'gather' ? 0.013 : seg.mode === 'hold' ? 0.034 : 0
+      const damp = seg.mode === 'net' ? 0.955 : 0.85
+      for (const p of particles) {
+        if (seg.mode === 'net') {
+          p.vx += (Math.random() - 0.5) * 0.14
+          p.vy += (Math.random() - 0.5) * 0.14
+          if (p.x < 8) p.vx += 0.08
+          if (p.x > width - 8) p.vx -= 0.08
+          if (p.y < 8) p.vy += 0.08
+          if (p.y > height - 8) p.vy -= 0.08
+        } else {
+          const t = p.targets[seg.shape!]
+          const wob = seg.mode === 'hold' ? 2.2 : 0
+          const tx = t.x + (wob ? Math.sin(now / 620 + p.tw) * wob : 0)
+          const ty = t.y + (wob ? Math.cos(now / 700 + p.tw * 1.4) * wob : 0)
+          p.vx += (tx - p.x) * gatherK
+          p.vy += (ty - p.y) * gatherK
         }
-        z.resFrac = inZone ? resIn / inZone : z.resFrac * 0.98
-
-        // soft glow
-        const g = ctx!.createRadialGradient(z.x, z.y, 0, z.x, z.y, z.r * 1.6)
-        g.addColorStop(0, `rgba(79, 209, 197, ${0.1 + 0.06 * Math.sin(el / 900 + zi)})`)
-        g.addColorStop(1, 'rgba(79, 209, 197, 0)')
-        ctx!.fillStyle = g
-        ctx!.beginPath()
-        ctx!.arc(z.x, z.y, z.r * 1.6, 0, Math.PI * 2)
-        ctx!.fill()
-
-        // silhouette dots shimmer; colour slides mint → amber with resistance
-        const tint = z.resFrac
-        const cr = Math.round(185 + (245 - 185) * tint)
-        const cg = Math.round(242 - (168 - 55) * tint * 0.55)
-        const cb = Math.round(231 - (94 - 0) * tint * 0.6)
-        const s = z.r * 1.5
-        for (let i = 0; i < z.dots.length; i++) {
-          const d = z.dots[i]
-          const tw = animate ? 0.35 + 0.45 * (0.5 + 0.5 * Math.sin(el / 600 + i * 0.7)) : 0.6
-          ctx!.fillStyle = `rgba(${cr}, ${cg}, ${cb}, ${tw})`
-          ctx!.fillRect(z.x + d.x * s, z.y + d.y * s, 1.6, 1.6)
+        const dx = p.x - mouse.x
+        const dy = p.y - mouse.y
+        const d2 = dx * dx + dy * dy
+        if (d2 < 8100) {
+          const d = Math.sqrt(d2) || 1
+          const f = ((90 - d) / 90) * 1.5
+          p.vx += (dx / d) * f
+          p.vy += (dy / d) * f
         }
+        p.vx *= damp
+        p.vy *= damp
+        p.x += p.vx
+        p.y += p.vy
       }
 
-      // ── conjugation flashes ──
-      flashes = flashes.filter((f) => f.t > 0)
-      for (const f of flashes) {
-        f.t -= animate ? 0.04 : 0
-        ctx!.strokeStyle = `rgba(255, 207, 130, ${f.t})`
-        ctx!.shadowColor = '#f5a85e'
-        ctx!.shadowBlur = 8
-        ctx!.lineWidth = 1.2
-        ctx!.beginPath()
-        ctx!.arc(f.x, f.y, (1 - f.t) * 10 + 2, 0, Math.PI * 2)
-        ctx!.stroke()
-        ctx!.shadowBlur = 0
-      }
-
-      // ── bacteria ──
-      for (const b of bacs) {
-        const col = b.resistant ? RES[Math.floor(b.wobble) % 3] : SUSC[Math.floor(b.wobble) % 3]
-        ctx!.save()
-        ctx!.translate(b.x, b.y)
-        ctx!.rotate(b.angle)
-        ctx!.globalAlpha = Math.max(0.15, b.hp)
-        ctx!.shadowColor = b.resistant ? '#e8894a' : '#4fd1c5'
-        ctx!.shadowBlur = b.resistant ? 5 : 2
-        ctx!.fillStyle = col
-        const s = b.size
-        ctx!.beginPath()
-        ctx!.roundRect(-s * 1.4, -s * 0.55, s * 2.8, s * 1.1, s * 0.55)
-        ctx!.fill()
-        ctx!.restore()
-      }
-
-      // ── antibiotic molecules ──
-      for (const d of drugs) drawPlus(d)
-    }
-
-    function tick(now: number) {
-      if (!running) return
-      raf = requestAnimationFrame(tick)
-
-      // periodic antibiotic wave
-      if (now - lastWave > 9000 && bacs.length > 20) spawnWave(now)
-
-      // update bacteria
-      const newborn: Bac[] = []
-      for (const b of bacs) {
-        b.retarget--
-        if (b.retarget <= 0) {
-          const t = pickTarget()
-          b.tx = t.x
-          b.ty = t.y
-          b.retarget = 160 + Math.random() * 240
-        }
-        const dx = b.tx - b.x
-        const dy = b.ty - b.y
-        const want = Math.atan2(dy, dx)
-        let diff = want - b.angle
-        while (diff > Math.PI) diff -= Math.PI * 2
-        while (diff < -Math.PI) diff += Math.PI * 2
-        b.angle += diff * 0.04 + Math.sin(now / 300 + b.wobble) * 0.05
-        b.x += Math.cos(b.angle) * b.speed
-        b.y += Math.sin(b.angle) * b.speed
-
-        // pointer repulsion
-        const mx = b.x - mouse.x
-        const my = b.y - mouse.y
-        const md2 = mx * mx + my * my
-        if (md2 < 8100) {
-          const md = Math.sqrt(md2) || 1
-          b.x += (mx / md) * 2.2
-          b.y += (my / md) * 2.2
-        }
-
-        // wrap softly at edges
-        if (b.x < -12) b.x = width + 10
-        if (b.x > width + 12) b.x = -10
-        if (b.y < -12) b.y = height + 10
-        if (b.y > height + 12) b.y = -10
-
-        // division: survivors repopulate
-        if (bacs.length + newborn.length < CAP && Math.random() < 0.006) {
-          newborn.push({
-            ...b,
-            x: b.x + (Math.random() - 0.5) * 8,
-            y: b.y + (Math.random() - 0.5) * 8,
-            angle: Math.random() * Math.PI * 2,
-            hp: 1,
-            wobble: Math.random() * 1000,
-          })
-        }
-      }
-      if (newborn.length) bacs.push(...newborn)
-
-      // conjugation: resistant bacteria transfer on contact
-      for (let i = 0; i < bacs.length; i += 3) {
-        const a = bacs[i]
-        if (!a.resistant) continue
-        for (let j = 0; j < bacs.length; j += 3) {
-          const o = bacs[j]
-          if (o.resistant) continue
-          const dx = a.x - o.x
-          const dy = a.y - o.y
-          if (dx * dx + dy * dy < 64 && Math.random() < 0.05) {
-            o.resistant = true
-            flashes.push({ x: (a.x + o.x) / 2, y: (a.y + o.y) / 2, t: 1 })
+      // constellation lines
+      const R = seg.mode === 'net' ? 56 : 40
+      const R2 = R * R
+      const baseA = seg.mode === 'net' ? 0.3 : 0.05
+      ctx!.lineWidth = 0.7
+      ctx!.strokeStyle = '#8fe6d7'
+      for (let i = 0; i < particles.length; i++) {
+        const a = particles[i]
+        for (let j = i + 1; j < particles.length; j++) {
+          const b = particles[j]
+          const dx = a.x - b.x
+          const dy = a.y - b.y
+          const d2 = dx * dx + dy * dy
+          if (d2 < R2) {
+            ctx!.globalAlpha = (1 - Math.sqrt(d2) / R) * baseA
+            ctx!.beginPath()
+            ctx!.moveTo(a.x, a.y)
+            ctx!.lineTo(b.x, b.y)
+            ctx!.stroke()
           }
         }
       }
+      ctx!.globalAlpha = 1
 
-      // antibiotics drift and kill susceptible bacteria
-      drugs = drugs.filter((d) => d.x > -30 && d.x < width + 30 && d.y > -30 && d.y < height + 30)
-      for (const d of drugs) {
-        d.x += d.vx
-        d.y += d.vy
-        d.spin += 0.02
-        for (const b of bacs) {
-          if (b.resistant || b.hp <= 0) continue
-          const dx = b.x - d.x
-          const dy = b.y - d.y
-          if (dx * dx + dy * dy < 196) b.hp -= 0.05
-        }
+      // particles
+      for (const p of particles) {
+        const tw = 0.75 + 0.25 * Math.sin(now / 420 + p.tw)
+        const s = p.size * tw
+        ctx!.drawImage(p.amber ? glowAmber : glowMint, p.x - s, p.y - s, s * 2, s * 2)
       }
-      bacs = bacs.filter((b) => b.hp > 0)
-
-      // immigration event: fresh susceptible lineages arrive once resistance dominates
-      const resCount = bacs.filter((b) => b.resistant).length
-      if (bacs.length > 10 && resCount / bacs.length > 0.85) {
-        for (let i = 0; i < 16; i++) {
-          const edge = Math.floor(Math.random() * 4)
-          const t = pickTarget()
-          bacs.push({
-            x: edge === 0 ? 0 : edge === 1 ? width : Math.random() * width,
-            y: edge === 2 ? 0 : edge === 3 ? height : Math.random() * height,
-            angle: Math.random() * Math.PI * 2,
-            speed: 0.35 + Math.random() * 0.4,
-            size: 2.2 + Math.random() * 1.8,
-            resistant: false,
-            hp: 1,
-            wobble: Math.random() * 1000,
-            tx: t.x,
-            ty: t.y,
-            retarget: 200,
-          })
-        }
-      }
-
-      draw(now, true)
     }
 
     build()
-    // prime the background so trails don't reveal a blank first frame
-    ctx.fillStyle = '#0e3435'
+    ctx.fillStyle = BG
     ctx.fillRect(0, 0, width, height)
 
-    const staticDraw = () => {
-      // pre-roll a little simulated life for a lively still frame
-      for (let i = 0; i < 40; i++) draw(performance.now() + i * 16, false)
+    const staticFrame = () => {
+      // settle into the human shape, then draw one clean frame
+      const seg = SEGMENTS[1]
+      for (let k = 0; k < 120; k++) {
+        for (const p of particles) {
+          const t = p.targets[seg.shape!]
+          p.vx += (t.x - p.x) * 0.034
+          p.vy += (t.y - p.y) * 0.034
+          p.vx *= 0.85
+          p.vy *= 0.85
+          p.x += p.vx
+          p.y += p.vy
+        }
+      }
+      ctx.fillStyle = BG
+      ctx.fillRect(0, 0, width, height)
+      frame(performance.now())
     }
+
     if (reduced || snapshot) {
-      staticDraw()
+      staticFrame()
     } else {
-      raf = requestAnimationFrame(tick)
+      raf = requestAnimationFrame(function tick(now) {
+        if (!running) return
+        frame(now)
+        raf = requestAnimationFrame(tick)
+      })
     }
 
     const onMove = (e: PointerEvent) => {
@@ -455,16 +323,22 @@ export function LiveResistome({ className = '' }: { className?: string }) {
     }
     const ro = new ResizeObserver(() => {
       build()
-      ctx!.fillStyle = '#0e3435'
+      ctx!.fillStyle = BG
       ctx!.fillRect(0, 0, width, height)
-      if (reduced || snapshot) staticDraw()
+      if (reduced || snapshot) staticFrame()
     })
     ro.observe(canvas.parentElement!)
     const io = new IntersectionObserver(
       ([entry]) => {
         running = entry.isIntersecting && !reduced && !snapshot
         cancelAnimationFrame(raf)
-        if (running) raf = requestAnimationFrame(tick)
+        if (running) {
+          raf = requestAnimationFrame(function tick(now) {
+            if (!running) return
+            frame(now)
+            raf = requestAnimationFrame(tick)
+          })
+        }
       },
       { threshold: 0.05 },
     )
@@ -485,6 +359,18 @@ export function LiveResistome({ className = '' }: { className?: string }) {
   return (
     <div className={`relative ${className}`}>
       <canvas ref={canvasRef} className="absolute inset-0" aria-hidden="true" />
+      <div className="pointer-events-none absolute bottom-4 left-1/2 z-10 flex -translate-x-1/2 items-center gap-2.5">
+        {['HUMANS', 'ANIMALS', 'ENVIRONMENTS', 'ONE HEALTH'].map((s) => (
+          <span
+            key={s}
+            className={`text-[10px] font-semibold uppercase tracking-[0.2em] transition-all duration-700 ${
+              label === s ? 'text-amber-300' : 'text-primary-foreground/35'
+            }`}
+          >
+            {s}
+          </span>
+        ))}
+      </div>
     </div>
   )
 }

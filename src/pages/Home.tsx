@@ -72,26 +72,6 @@ export function Home() {
             <div className="relative overflow-hidden rounded-3xl border border-border bg-primary shadow-2xl shadow-primary/30">
               <div className="absolute inset-0 bg-dot-grid-light" aria-hidden="true" />
               <LiveResistome className="aspect-[4/3] w-full sm:aspect-square" />
-              <div className="absolute left-5 top-5 z-10 flex items-center gap-2 rounded-full bg-primary/60 px-3.5 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-primary-foreground backdrop-blur">
-                <span className="relative flex h-2 w-2">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-75" />
-                  <span className="relative inline-flex h-2 w-2 rounded-full bg-accent" />
-                </span>
-                Live · natural selection
-              </div>
-              {[
-                { label: 'Human', pos: 'left-1/2 top-[42%] -translate-x-1/2' },
-                { label: 'Animal', pos: 'left-[24%] top-[90%] -translate-x-1/2' },
-                { label: 'Environment', pos: 'left-[76%] top-[90%] -translate-x-1/2' },
-              ].map((l) => (
-                <span
-                  key={l.label}
-                  className={`pointer-events-none absolute z-10 inline-flex items-center gap-1.5 rounded-full bg-primary/60 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-primary-foreground/80 backdrop-blur ${l.pos}`}
-                >
-                  <span className="h-1.5 w-1.5 rounded-full bg-accent" />
-                  {l.label}
-                </span>
-              ))}
             </div>
           </Reveal>
         </div>
