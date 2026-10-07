@@ -3,7 +3,7 @@ import { motion } from 'framer-motion'
 import { ArrowRight, ArrowUpRight, BookOpen } from 'lucide-react'
 import { Reveal } from '@/components/Reveal'
 import { CtaBand } from '@/components/CtaBand'
-import { OneHealthFlow } from '@/components/OneHealthFlow'
+import { LiveResistome } from '@/components/LiveResistome'
 import {
   site,
   researchAreas,
@@ -69,32 +69,24 @@ export function Home() {
           </div>
 
           <Reveal delay={0.15} className="relative">
-            <div className="relative overflow-hidden rounded-3xl border border-border shadow-2xl shadow-primary/30">
-              <img
-                src="/images/onehealth-hero.jpg"
-                alt="One Health — a hospital ward, a livestock farm, and a wastewater treatment plant, connected by glowing gene-flow trails"
-                className="aspect-[16/11] w-full object-cover"
-              />
-              <div
-                className="absolute inset-0 bg-gradient-to-t from-primary/75 via-transparent to-primary/25"
-                aria-hidden="true"
-              />
-              <OneHealthFlow className="absolute inset-0" />
-              <div className="absolute left-5 top-5 z-10 flex items-center gap-2 rounded-full bg-primary/50 px-3.5 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-primary-foreground backdrop-blur">
+            <div className="relative overflow-hidden rounded-3xl border border-border bg-primary shadow-2xl shadow-primary/30">
+              <div className="absolute inset-0 bg-dot-grid-light" aria-hidden="true" />
+              <LiveResistome className="aspect-[4/3] w-full sm:aspect-square" />
+              <div className="absolute left-5 top-5 z-10 flex items-center gap-2 rounded-full bg-primary/60 px-3.5 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-primary-foreground backdrop-blur">
                 <span className="relative flex h-2 w-2">
                   <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-75" />
                   <span className="relative inline-flex h-2 w-2 rounded-full bg-accent" />
                 </span>
-                Live · One Health
+                Live · natural selection
               </div>
               {[
-                { label: 'Human', pos: 'left-[6%] bottom-[5%]' },
-                { label: 'Animal', pos: 'left-1/2 top-[6%] -translate-x-1/2' },
-                { label: 'Environment', pos: 'right-[5%] bottom-[5%]' },
+                { label: 'Human', pos: 'left-1/2 top-[42%] -translate-x-1/2' },
+                { label: 'Animal', pos: 'left-[24%] top-[90%] -translate-x-1/2' },
+                { label: 'Environment', pos: 'left-[76%] top-[90%] -translate-x-1/2' },
               ].map((l) => (
                 <span
                   key={l.label}
-                  className={`pointer-events-none absolute z-10 inline-flex items-center gap-1.5 rounded-full bg-primary/55 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-primary-foreground backdrop-blur ${l.pos}`}
+                  className={`pointer-events-none absolute z-10 inline-flex items-center gap-1.5 rounded-full bg-primary/60 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-primary-foreground/80 backdrop-blur ${l.pos}`}
                 >
                   <span className="h-1.5 w-1.5 rounded-full bg-accent" />
                   {l.label}
