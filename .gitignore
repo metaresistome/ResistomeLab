@@ -1,0 +1,32 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+dist-ssr/
+
+# Local env / logs
+*.local
+*.log
+logs/
+
+# Editor / OS
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Project staging artifacts
+art/
+shots/
+old-site/
+site-bundle.zip
+genall.sh
+extract.py
+extracted-strings.txt
+content-strings.txt
