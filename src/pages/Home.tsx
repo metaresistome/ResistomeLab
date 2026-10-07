@@ -3,7 +3,6 @@ import { motion } from 'framer-motion'
 import { ArrowRight, ArrowUpRight, BookOpen } from 'lucide-react'
 import { Reveal } from '@/components/Reveal'
 import { CtaBand } from '@/components/CtaBand'
-import { LiveResistome } from '@/components/LiveResistome'
 import {
   site,
   researchAreas,
@@ -70,8 +69,16 @@ export function Home() {
 
           <Reveal delay={0.15} className="relative">
             <div className="relative overflow-hidden rounded-3xl border border-border bg-primary shadow-2xl shadow-primary/30">
-              <div className="absolute inset-0 bg-dot-grid-light" aria-hidden="true" />
-              <LiveResistome className="aspect-[4/3] w-full sm:aspect-square" />
+              <video
+                className="block aspect-video w-full object-cover"
+                src="/videos/hero.mp4"
+                poster="/images/hero-poster.jpg"
+                autoPlay
+                muted
+                loop
+                playsInline
+                aria-label="One Health animation: antimicrobial resistance spreading between humans, animals, and environments"
+              />
             </div>
           </Reveal>
         </div>
