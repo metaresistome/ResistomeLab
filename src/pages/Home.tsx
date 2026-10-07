@@ -1,41 +1,15 @@
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { ArrowRight, ArrowUpRight, BookOpen, Microscope, Droplets } from 'lucide-react'
+import { ArrowRight, ArrowUpRight, BookOpen } from 'lucide-react'
 import { Reveal } from '@/components/Reveal'
 import { CtaBand } from '@/components/CtaBand'
-import { ResistomeFlow } from '@/components/ResistomeFlow'
+import { OneHealthFlow } from '@/components/OneHealthFlow'
 import {
   site,
   researchAreas,
   approachSteps,
   featuredPublication,
 } from '@/data/site'
-import { isSnapshotMode } from '@/lib/snapshot'
-import type { ReactNode } from 'react'
-
-function Badge({
-  className,
-  delay,
-  children,
-}: {
-  className: string
-  delay: number
-  children: ReactNode
-}) {
-  if (isSnapshotMode()) {
-    return <div className={className}>{children}</div>
-  }
-  return (
-    <motion.div
-      className={className}
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay, duration: 0.7 }}
-    >
-      {children}
-    </motion.div>
-  )
-}
 
 const marqueeWords = [
   'Antimicrobial resistance',
@@ -95,54 +69,37 @@ export function Home() {
           </div>
 
           <Reveal delay={0.15} className="relative">
-            <div className="relative">
-              <div className="relative overflow-hidden rounded-3xl border border-border bg-primary shadow-2xl shadow-primary/30">
-                <div className="absolute inset-0 bg-dot-grid-light" aria-hidden="true" />
-                <ResistomeFlow className="aspect-[5/6] w-full sm:aspect-square" />
-                <div className="absolute left-5 top-5 z-10 flex items-center gap-2 rounded-full bg-primary-foreground/10 px-3.5 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-primary-foreground backdrop-blur">
-                  <span className="relative flex h-2 w-2">
-                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-75" />
-                    <span className="relative inline-flex h-2 w-2 rounded-full bg-accent" />
-                  </span>
-                  Live · One Health
-                </div>
-                <div className="absolute bottom-5 right-5 z-10 w-[calc(100%-2.5rem)] max-w-sm rounded-2xl bg-primary-foreground/10 p-4 text-primary-foreground backdrop-blur">
-                  <p className="text-sm font-semibold">The resistome triangle</p>
-                  <p className="mt-1 text-xs leading-relaxed text-primary-foreground/75">
-                    Watch resistance emerge in humans, animals, and the environment — then
-                    travel between them as plasmids until the three become one connected
-                    system. Move your cursor through a hub.
-                  </p>
-                </div>
+            <div className="relative overflow-hidden rounded-3xl border border-border shadow-2xl shadow-primary/30">
+              <img
+                src="/images/onehealth-hero.jpg"
+                alt="One Health — a hospital ward, a livestock farm, and a wastewater treatment plant, connected by glowing gene-flow trails"
+                className="aspect-[16/11] w-full object-cover"
+              />
+              <div
+                className="absolute inset-0 bg-gradient-to-t from-primary/75 via-transparent to-primary/25"
+                aria-hidden="true"
+              />
+              <OneHealthFlow className="absolute inset-0" />
+              <div className="absolute left-5 top-5 z-10 flex items-center gap-2 rounded-full bg-primary/50 px-3.5 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-primary-foreground backdrop-blur">
+                <span className="relative flex h-2 w-2">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-75" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-accent" />
+                </span>
+                Live · One Health
               </div>
-              <Badge
-                delay={0.5}
-                className="absolute -bottom-6 -left-4 rounded-2xl border border-border bg-card p-4 shadow-xl sm:-left-8"
-              >
-                <div className="flex items-center gap-3">
-                  <span className="rounded-xl bg-primary/10 p-2.5 text-primary">
-                    <Microscope className="h-5 w-5" />
-                  </span>
-                  <div>
-                    <p className="text-sm font-semibold">One Health framework</p>
-                    <p className="text-xs text-muted-foreground">signal · environment · genome</p>
-                  </div>
-                </div>
-              </Badge>
-              <Badge
-                delay={0.7}
-                className="absolute -top-5 right-4 rounded-2xl border border-border bg-card p-4 shadow-xl"
-              >
-                <div className="flex items-center gap-3">
-                  <span className="rounded-xl bg-accent/10 p-2.5 text-accent">
-                    <Droplets className="h-5 w-5" />
-                  </span>
-                  <div>
-                    <p className="text-sm font-semibold">Wastewater surveillance</p>
-                    <p className="text-xs text-muted-foreground">detecting emerging signals</p>
-                  </div>
-                </div>
-              </Badge>
+              {[
+                { label: 'Human', pos: 'left-[6%] bottom-[5%]' },
+                { label: 'Animal', pos: 'left-1/2 top-[6%] -translate-x-1/2' },
+                { label: 'Environment', pos: 'right-[5%] bottom-[5%]' },
+              ].map((l) => (
+                <span
+                  key={l.label}
+                  className={`pointer-events-none absolute z-10 inline-flex items-center gap-1.5 rounded-full bg-primary/55 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-primary-foreground backdrop-blur ${l.pos}`}
+                >
+                  <span className="h-1.5 w-1.5 rounded-full bg-accent" />
+                  {l.label}
+                </span>
+              ))}
             </div>
           </Reveal>
         </div>
@@ -347,7 +304,7 @@ export function Home() {
               Evidence that connects people, pathogens, and places.
             </h2>
             <p className="mt-5 text-lg leading-relaxed text-muted-foreground">
-              Dr. Muhammad Shafiq is a Senior Researcher in the Department of Clinical Pharmacy
+              Dr. Muhammad Shafiq is an Associate Professor in the Department of Clinical Pharmacy
               at Shantou University Medical College. His work investigates antimicrobial
               resistance within a One Health framework.
             </p>

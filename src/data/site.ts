@@ -17,7 +17,7 @@ export const site = {
 }
 
 export const pi = {
-  title: 'Senior Researcher',
+  title: 'Associate Professor',
   metrics: [
     { value: '89', label: 'Peer-reviewed outputs' },
     { value: '23', label: 'First / corresponding author' },
@@ -30,37 +30,12 @@ export const pi = {
       degree: 'Ph.D., Pharmacology & Toxicology',
       institution: 'Nanjing Agricultural University, China',
     },
-    {
-      years: '2014 – 2016',
-      degree: 'M.Sc., Breeding & Genetics',
-      institution: 'The University of Agriculture, Peshawar, Pakistan',
-    },
-    {
-      years: '2010 – 2014',
-      degree: 'D.V.M., Doctor of Veterinary Medicine',
-      institution: 'The University of Agriculture, Peshawar, Pakistan',
-    },
   ],
   appointments: [
     {
       years: '2026 – Present',
-      role: 'Senior Researcher',
+      role: 'Associate Professor',
       institution: 'Department of Clinical Pharmacy, Shantou University Medical College, China',
-    },
-    {
-      years: '2025 – 2026',
-      role: 'Marie Skłodowska-Curie (MSCA) Individual Fellow — ONISILOS',
-      institution: 'NIREAS – International Water Research Institute, University of Cyprus',
-    },
-    {
-      years: '2023 – 2025',
-      role: 'Associate Researcher / Associate Professor',
-      institution: 'Shantou University Medical College, China',
-    },
-    {
-      years: '2021 – 2023',
-      role: 'Postdoctoral Fellow',
-      institution: 'Shantou University Medical College, China',
     },
   ],
   editorial: [

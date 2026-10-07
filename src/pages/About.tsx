@@ -21,7 +21,7 @@ export function About() {
       <PageHeader
         kicker="Principal investigator"
         title="Dr. Muhammad Shafiq"
-        subtitle="Senior Researcher · AMR · One Health — Department of Clinical Pharmacy, Shantou University Medical College"
+        subtitle="Associate Professor · AMR · One Health — Department of Clinical Pharmacy, Shantou University Medical College"
         image="/images/page-profile.jpg"
       />
 
@@ -117,7 +117,7 @@ export function About() {
             </Reveal>
             <Reveal delay={0.1}>
               <p className="mt-6 text-lg leading-relaxed text-muted-foreground">
-                Dr. Muhammad Shafiq is a Senior Researcher in the Department of Clinical
+                Dr. Muhammad Shafiq is an Associate Professor in the Department of Clinical
                 Pharmacy at Shantou University Medical College. His work investigates
                 antimicrobial resistance within a One Health framework.
               </p>
@@ -187,65 +187,56 @@ export function About() {
         </div>
       </section>
 
-      {/* ── Education & appointments ─────────────────────── */}
+      {/* ── Education & current position ─────────────────── */}
       <section className="border-t border-border bg-secondary/40">
         <div className="mx-auto max-w-7xl px-5 py-24 sm:px-8">
-          <div className="grid gap-14 lg:grid-cols-2 lg:gap-20">
-            <div>
-              <Reveal>
-                <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.28em] text-accent">
+          <div className="grid gap-6 md:grid-cols-2">
+            <Reveal>
+              <div className="h-full rounded-3xl border border-border bg-card p-8 sm:p-10">
+                <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.22em] text-accent">
                   <GraduationCap className="h-4 w-4" />
                   Education
                 </p>
-                <h2 className="font-display mt-3 text-balance text-3xl font-semibold tracking-tight sm:text-4xl">
-                  Training that bridges veterinary and human health.
-                </h2>
-              </Reveal>
-              <div className="mt-10 space-y-0">
-                {pi.education.map((e, i) => (
-                  <Reveal key={e.degree} delay={i * 0.08}>
-                    <div className="relative border-l-2 border-border pl-7 pb-8 last:pb-0">
-                      <span className="absolute -left-[5px] top-1.5 h-2 w-2 rounded-full bg-primary" />
+                <div className="mt-6">
+                  {pi.education.map((e) => (
+                    <div key={e.degree}>
                       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                         {e.years}
                       </p>
-                      <h3 className="font-display mt-1.5 text-lg font-semibold tracking-tight">
+                      <h3 className="font-display mt-1.5 text-xl font-semibold tracking-tight">
                         {e.degree}
                       </h3>
-                      <p className="text-sm text-muted-foreground">{e.institution}</p>
+                      <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                        {e.institution}
+                      </p>
                     </div>
-                  </Reveal>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
-
-            <div>
-              <Reveal>
-                <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.28em] text-accent">
+            </Reveal>
+            <Reveal delay={0.08}>
+              <div className="h-full rounded-3xl border border-border bg-card p-8 sm:p-10">
+                <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.22em] text-accent">
                   <Award className="h-4 w-4" />
-                  Appointments
+                  Current position
                 </p>
-                <h2 className="font-display mt-3 text-balance text-3xl font-semibold tracking-tight sm:text-4xl">
-                  A career built across three countries.
-                </h2>
-              </Reveal>
-              <div className="mt-10 space-y-0">
-                {pi.appointments.map((a, i) => (
-                  <Reveal key={a.role} delay={i * 0.08}>
-                    <div className="relative border-l-2 border-border pl-7 pb-8 last:pb-0">
-                      <span className="absolute -left-[5px] top-1.5 h-2 w-2 rounded-full bg-accent" />
+                <div className="mt-6">
+                  {pi.appointments.map((a) => (
+                    <div key={a.role}>
                       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                         {a.years}
                       </p>
-                      <h3 className="font-display mt-1.5 text-lg font-semibold tracking-tight">
+                      <h3 className="font-display mt-1.5 text-xl font-semibold tracking-tight">
                         {a.role}
                       </h3>
-                      <p className="text-sm text-muted-foreground">{a.institution}</p>
+                      <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                        {a.institution}
+                      </p>
                     </div>
-                  </Reveal>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
+            </Reveal>
           </div>
 
           <Reveal delay={0.1}>
