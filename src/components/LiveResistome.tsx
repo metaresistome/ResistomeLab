@@ -2,11 +2,9 @@ import { useEffect, useRef, useState } from 'react'
 import { isSnapshotMode } from '@/lib/snapshot'
 
 /**
- * "Morphing Resistome" — a glowing particle swarm that coalesces into a
- * human silhouette, morphs into an animal paw, then a leaf, then dissolves
- * into a free-floating constellation (One Health network) before re-forming.
- * Mint particles are the microbial world; amber ones are resistance.
- * Pointer repels the swarm.
+ * "The Resistome Speaks" — a glowing particle swarm that gathers to spell
+ * HUMANS → ANIMALS → ENVIRONMENTS → ONE HEALTH, then loops. Amber particles
+ * scattered through the swarm are the resistance genes. Pointer repels.
  */
 
 type Pt = { x: number; y: number }
@@ -16,47 +14,57 @@ type Particle = {
   y: number
   vx: number
   vy: number
-  targets: Pt[] // [human, animal, environment]
+  targets: Pt[]
   amber: boolean
   size: number
   tw: number
 }
 
-type Seg = { label: string; mode: 'gather' | 'hold' | 'net'; shape?: number; dur: number }
+type Seg = { label: string; mode: 'gather' | 'hold'; shape: number; dur: number }
+
+const WORDS = ['HUMANS', 'ANIMALS', 'ENVIRONMENTS', 'ONE HEALTH']
 
 const SEGMENTS: Seg[] = [
-  { label: 'HUMANS', mode: 'gather', shape: 0, dur: 1900 },
-  { label: 'HUMANS', mode: 'hold', shape: 0, dur: 3400 },
-  { label: 'ANIMALS', mode: 'gather', shape: 1, dur: 1900 },
-  { label: 'ANIMALS', mode: 'hold', shape: 1, dur: 3400 },
-  { label: 'ENVIRONMENTS', mode: 'gather', shape: 2, dur: 1900 },
-  { label: 'ENVIRONMENTS', mode: 'hold', shape: 2, dur: 3400 },
-  { label: 'ONE HEALTH', mode: 'net', dur: 4600 },
+  { label: WORDS[0], mode: 'gather', shape: 0, dur: 1700 },
+  { label: WORDS[0], mode: 'hold', shape: 0, dur: 2600 },
+  { label: WORDS[1], mode: 'gather', shape: 1, dur: 1700 },
+  { label: WORDS[1], mode: 'hold', shape: 1, dur: 2600 },
+  { label: WORDS[2], mode: 'gather', shape: 2, dur: 1700 },
+  { label: WORDS[2], mode: 'hold', shape: 2, dur: 2600 },
+  { label: WORDS[3], mode: 'gather', shape: 3, dur: 1800 },
+  { label: WORDS[3], mode: 'hold', shape: 3, dur: 3600 },
 ]
 const TOTAL = SEGMENTS.reduce((a, s) => a + s.dur, 0)
 
-function segAt(el: number): { seg: Seg; local: number } {
+function segAt(el: number): Seg {
   let acc = 0
   for (const s of SEGMENTS) {
-    if (el < acc + s.dur) return { seg: s, local: el - acc }
+    if (el < acc + s.dur) return s
     acc += s.dur
   }
-  return { seg: SEGMENTS[SEGMENTS.length - 1], local: SEGMENTS[SEGMENTS.length - 1].dur }
+  return SEGMENTS[SEGMENTS.length - 1]
 }
 
-function sampleShape(draw: (c: CanvasRenderingContext2D, s: number) => void, size: number, count: number): Pt[] {
+/** Render a word in heavy type on an offscreen canvas and sample it to dots. */
+function sampleWord(word: string, count: number): Pt[] {
   const off = document.createElement('canvas')
-  off.width = size
-  off.height = size
+  off.width = 560
+  off.height = 200
   const c = off.getContext('2d')!
+  let fs = 100
+  c.font = `900 ${fs}px Arial, Helvetica, sans-serif`
+  const measured = c.measureText(word).width
+  fs = Math.min((fs * 500) / measured, 150)
+  c.font = `900 ${fs}px Arial, Helvetica, sans-serif`
+  c.textAlign = 'center'
+  c.textBaseline = 'middle'
   c.fillStyle = '#fff'
-  c.strokeStyle = '#fff'
-  draw(c, size)
-  const img = c.getImageData(0, 0, size, size).data
+  c.fillText(word, 280, 104)
+  const img = c.getImageData(0, 0, 560, 200).data
   const pts: Pt[] = []
-  for (let y = 0; y < size; y += 2) {
-    for (let x = 0; x < size; x += 2) {
-      if (img[(y * size + x) * 4 + 3] > 120) pts.push({ x: x / size - 0.5, y: y / size - 0.5 })
+  for (let y = 0; y < 200; y++) {
+    for (let x = 0; x < 560; x++) {
+      if (img[(y * 560 + x) * 4 + 3] > 120) pts.push({ x: x / 560 - 0.5, y: y / 200 - 0.5 })
     }
   }
   for (let i = pts.length - 1; i > 0; i--) {
@@ -69,73 +77,13 @@ function sampleShape(draw: (c: CanvasRenderingContext2D, s: number) => void, siz
   return picked
 }
 
-function humanShape(c: CanvasRenderingContext2D, s: number) {
-  const u = s / 100
-  c.beginPath()
-  c.arc(50 * u, 15 * u, 10.5 * u, 0, Math.PI * 2)
-  c.fill()
-  c.beginPath()
-  c.roundRect(37 * u, 27 * u, 26 * u, 36 * u, 11 * u)
-  c.fill()
-  c.lineWidth = 7 * u
-  c.lineCap = 'round'
-  c.beginPath()
-  c.moveTo(40 * u, 34 * u)
-  c.lineTo(28 * u, 58 * u)
-  c.moveTo(60 * u, 34 * u)
-  c.lineTo(72 * u, 58 * u)
-  c.stroke()
-  c.lineWidth = 7.5 * u
-  c.beginPath()
-  c.moveTo(44.5 * u, 62 * u)
-  c.lineTo(42 * u, 88 * u)
-  c.moveTo(55.5 * u, 62 * u)
-  c.lineTo(58 * u, 88 * u)
-  c.stroke()
-}
-
-function pawShape(c: CanvasRenderingContext2D, s: number) {
-  const u = s / 100
-  c.beginPath()
-  c.ellipse(50 * u, 63 * u, 18 * u, 14 * u, 0, 0, Math.PI * 2)
-  c.fill()
-  const toes: [number, number, number][] = [
-    [25, 42, 8],
-    [41.5, 29, 8.5],
-    [58.5, 29, 8.5],
-    [75, 42, 8],
-  ]
-  for (const [x, y, r] of toes) {
-    c.beginPath()
-    c.arc(x * u, y * u, r * u, 0, Math.PI * 2)
-    c.fill()
-  }
-}
-
-function leafShape(c: CanvasRenderingContext2D, s: number) {
-  const u = s / 100
-  c.save()
-  c.translate(50 * u, 50 * u)
-  c.rotate(-Math.PI / 4)
-  c.beginPath()
-  c.ellipse(0, 0, 28 * u, 16 * u, 0, 0, Math.PI * 2)
-  c.fill()
-  c.restore()
-  c.lineWidth = 4.5 * u
-  c.lineCap = 'round'
-  c.beginPath()
-  c.moveTo(67 * u, 67 * u)
-  c.quadraticCurveTo(75 * u, 78 * u, 79 * u, 89 * u)
-  c.stroke()
-}
-
 function makeGlow(r: number, g: number, b: number): HTMLCanvasElement {
   const c = document.createElement('canvas')
   c.width = 64
   c.height = 64
   const ctx = c.getContext('2d')!
   const grad = ctx.createRadialGradient(32, 32, 0, 32, 32, 32)
-  grad.addColorStop(0, `rgba(255,255,255,0.95)`)
+  grad.addColorStop(0, 'rgba(255,255,255,0.95)')
   grad.addColorStop(0.25, `rgba(${r},${g},${b},0.85)`)
   grad.addColorStop(1, `rgba(${r},${g},${b},0)`)
   ctx.fillStyle = grad
@@ -145,7 +93,7 @@ function makeGlow(r: number, g: number, b: number): HTMLCanvasElement {
 
 export function LiveResistome({ className = '' }: { className?: string }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const [label, setLabel] = useState('HUMANS')
+  const [label, setLabel] = useState(WORDS[0])
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -180,98 +128,65 @@ export function LiveResistome({ className = '' }: { className?: string }) {
       canvas!.style.height = `${height}px`
       ctx!.setTransform(dpr, 0, 0, dpr, 0, 0)
 
-      const count = width < 480 ? 340 : 520
-      const box = Math.min(width, height) * 0.74
+      const count = width < 480 ? 900 : 1600
+      const boxW = width * 0.92
+      const boxH = Math.min(height * 0.46, boxW * 0.36)
       const cx = width / 2
-      const cy = height / 2 - height * 0.02
-      const shapes = [sampleShape(humanShape, 100, count), sampleShape(pawShape, 100, count), sampleShape(leafShape, 100, count)]
+      const cy = height / 2
+      const words = WORDS.map((w) => sampleWord(w, count))
 
       particles = Array.from({ length: count }, (_, i) => ({
         x: cx + (Math.random() - 0.5) * width,
         y: cy + (Math.random() - 0.5) * height,
         vx: 0,
         vy: 0,
-        targets: shapes.map((pts) => ({
-          x: cx + pts[i % pts.length].x * box,
-          y: cy + pts[i % pts.length].y * box,
+        targets: words.map((pts) => ({
+          x: cx + pts[i % pts.length].x * boxW,
+          y: cy + pts[i % pts.length].y * boxH,
         })),
-        amber: Math.random() < 0.13,
-        size: 5 + Math.random() * 5,
+        amber: Math.random() < 0.15,
+        size: 2.6 + Math.random() * 3.2,
         tw: Math.random() * Math.PI * 2,
       }))
     }
 
     function frame(now: number) {
       const el = (now - start) % TOTAL
-      const { seg } = segAt(el)
+      const seg = segAt(el)
       if (seg.label !== lastLabel) {
         lastLabel = seg.label
         setLabel(seg.label)
       }
 
       // motion trails
-      ctx!.fillStyle = 'rgba(14, 52, 53, 0.32)'
+      ctx!.fillStyle = 'rgba(14, 52, 53, 0.3)'
       ctx!.fillRect(0, 0, width, height)
 
-      // physics
-      const gatherK = seg.mode === 'gather' ? 0.013 : seg.mode === 'hold' ? 0.034 : 0
-      const damp = seg.mode === 'net' ? 0.955 : 0.85
+      const k = seg.mode === 'gather' ? 0.014 : 0.038
       for (const p of particles) {
-        if (seg.mode === 'net') {
-          p.vx += (Math.random() - 0.5) * 0.14
-          p.vy += (Math.random() - 0.5) * 0.14
-          if (p.x < 8) p.vx += 0.08
-          if (p.x > width - 8) p.vx -= 0.08
-          if (p.y < 8) p.vy += 0.08
-          if (p.y > height - 8) p.vy -= 0.08
-        } else {
-          const t = p.targets[seg.shape!]
-          const wob = seg.mode === 'hold' ? 2.2 : 0
-          const tx = t.x + (wob ? Math.sin(now / 620 + p.tw) * wob : 0)
-          const ty = t.y + (wob ? Math.cos(now / 700 + p.tw * 1.4) * wob : 0)
-          p.vx += (tx - p.x) * gatherK
-          p.vy += (ty - p.y) * gatherK
-        }
+        const t = p.targets[seg.shape]
+        const wob = seg.mode === 'hold' ? 1.6 : 0
+        const tx = t.x + (wob ? Math.sin(now / 600 + p.tw) * wob : 0)
+        const ty = t.y + (wob ? Math.cos(now / 680 + p.tw * 1.4) * wob : 0)
+        p.vx += (tx - p.x) * k
+        p.vy += (ty - p.y) * k
+
         const dx = p.x - mouse.x
         const dy = p.y - mouse.y
         const d2 = dx * dx + dy * dy
         if (d2 < 8100) {
           const d = Math.sqrt(d2) || 1
-          const f = ((90 - d) / 90) * 1.5
+          const f = ((90 - d) / 90) * 1.6
           p.vx += (dx / d) * f
           p.vy += (dy / d) * f
         }
-        p.vx *= damp
-        p.vy *= damp
+        p.vx *= 0.84
+        p.vy *= 0.84
         p.x += p.vx
         p.y += p.vy
       }
 
-      // constellation lines
-      const R = seg.mode === 'net' ? 56 : 40
-      const R2 = R * R
-      const baseA = seg.mode === 'net' ? 0.3 : 0.05
-      ctx!.lineWidth = 0.7
-      ctx!.strokeStyle = '#8fe6d7'
-      for (let i = 0; i < particles.length; i++) {
-        const a = particles[i]
-        for (let j = i + 1; j < particles.length; j++) {
-          const b = particles[j]
-          const dx = a.x - b.x
-          const dy = a.y - b.y
-          const d2 = dx * dx + dy * dy
-          if (d2 < R2) {
-            ctx!.globalAlpha = (1 - Math.sqrt(d2) / R) * baseA
-            ctx!.beginPath()
-            ctx!.moveTo(a.x, a.y)
-            ctx!.lineTo(b.x, b.y)
-            ctx!.stroke()
-          }
-        }
-      }
-      ctx!.globalAlpha = 1
-
-      // particles
+      // particles — clean legible type, no cross-lines
       for (const p of particles) {
         const tw = 0.75 + 0.25 * Math.sin(now / 420 + p.tw)
         const s = p.size * tw
@@ -284,15 +199,14 @@ export function LiveResistome({ className = '' }: { className?: string }) {
     ctx.fillRect(0, 0, width, height)
 
     const staticFrame = () => {
-      // settle into the human shape, then draw one clean frame
-      const seg = SEGMENTS[1]
-      for (let k = 0; k < 120; k++) {
+      const seg = SEGMENTS[SEGMENTS.length - 1] // ONE HEALTH
+      for (let n = 0; n < 140; n++) {
         for (const p of particles) {
-          const t = p.targets[seg.shape!]
-          p.vx += (t.x - p.x) * 0.034
-          p.vy += (t.y - p.y) * 0.034
-          p.vx *= 0.85
-          p.vy *= 0.85
+          const t = p.targets[seg.shape]
+          p.vx += (t.x - p.x) * 0.038
+          p.vy += (t.y - p.y) * 0.038
+          p.vx *= 0.84
+          p.vy *= 0.84
           p.x += p.vx
           p.y += p.vy
         }
@@ -360,7 +274,7 @@ export function LiveResistome({ className = '' }: { className?: string }) {
     <div className={`relative ${className}`}>
       <canvas ref={canvasRef} className="absolute inset-0" aria-hidden="true" />
       <div className="pointer-events-none absolute bottom-4 left-1/2 z-10 flex -translate-x-1/2 items-center gap-2.5">
-        {['HUMANS', 'ANIMALS', 'ENVIRONMENTS', 'ONE HEALTH'].map((s) => (
+        {WORDS.map((s) => (
           <span
             key={s}
             className={`text-[10px] font-semibold uppercase tracking-[0.2em] transition-all duration-700 ${
