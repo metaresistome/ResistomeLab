@@ -3,7 +3,7 @@ import { motion } from 'framer-motion'
 import { ArrowRight, ArrowUpRight, BookOpen, Microscope, Droplets } from 'lucide-react'
 import { Reveal } from '@/components/Reveal'
 import { CtaBand } from '@/components/CtaBand'
-import { ParticleHuman } from '@/components/ParticleHuman'
+import { ResistomeFlow } from '@/components/ResistomeFlow'
 import {
   site,
   researchAreas,
@@ -98,19 +98,20 @@ export function Home() {
             <div className="relative">
               <div className="relative overflow-hidden rounded-3xl border border-border bg-primary shadow-2xl shadow-primary/30">
                 <div className="absolute inset-0 bg-dot-grid-light" aria-hidden="true" />
-                <ParticleHuman className="aspect-[5/6] w-full sm:aspect-square" />
+                <ResistomeFlow className="aspect-[5/6] w-full sm:aspect-square" />
                 <div className="absolute left-5 top-5 z-10 flex items-center gap-2 rounded-full bg-primary-foreground/10 px-3.5 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-primary-foreground backdrop-blur">
                   <span className="relative flex h-2 w-2">
                     <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-75" />
                     <span className="relative inline-flex h-2 w-2 rounded-full bg-accent" />
                   </span>
-                  Live · drugs & pathogens
+                  Live · One Health
                 </div>
                 <div className="absolute bottom-5 right-5 z-10 w-[calc(100%-2.5rem)] max-w-sm rounded-2xl bg-primary-foreground/10 p-4 text-primary-foreground backdrop-blur">
-                  <p className="text-sm font-semibold">One Health, visualized live</p>
+                  <p className="text-sm font-semibold">The resistome triangle</p>
                   <p className="mt-1 text-xs leading-relaxed text-primary-foreground/75">
-                    Simulated antibiotics and pathogens endlessly assembling the human they
-                    threaten — then dispersing and re-forming. Move your cursor through the swarm.
+                    Watch resistance emerge in humans, animals, and the environment — then
+                    travel between them as plasmids until the three become one connected
+                    system. Move your cursor through a hub.
                   </p>
                 </div>
               </div>
