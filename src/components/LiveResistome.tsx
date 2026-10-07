@@ -115,6 +115,29 @@ export function LiveResistome({ className = '' }: { className?: string }) {
     const dpr = Math.min(window.devicePixelRatio || 1, 2)
     const BG = '#0e3435'
 
+    // agar-plate backdrop, cover-fitted into an offscreen canvas
+    const bgCanvas = document.createElement('canvas')
+    const bgImg = new Image()
+    bgImg.src = '/images/agar-plate.jpg'
+    let bgReady = false
+    function paintBg() {
+      if (!bgImg.complete || !bgImg.naturalWidth || width === 0) return
+      bgCanvas.width = width
+      bgCanvas.height = height
+      const bc = bgCanvas.getContext('2d')!
+      const scale = Math.max(width / bgImg.naturalWidth, height / bgImg.naturalHeight)
+      const dw = bgImg.naturalWidth * scale
+      const dh = bgImg.naturalHeight * scale
+      bc.fillStyle = BG
+      bc.fillRect(0, 0, width, height)
+      bc.drawImage(bgImg, (width - dw) / 2, (height - dh) / 2, dw, dh)
+      bgReady = true
+    }
+    bgImg.onload = () => {
+      paintBg()
+      if (reduced || snapshot) staticFrame()
+    }
+
     const glowMint = makeGlow(120, 226, 206)
     const glowAmber = makeGlow(240, 168, 94)
 
@@ -148,6 +171,7 @@ export function LiveResistome({ className = '' }: { className?: string }) {
         size: 2.6 + Math.random() * 3.2,
         tw: Math.random() * Math.PI * 2,
       }))
+      paintBg()
     }
 
     function frame(now: number) {
@@ -158,9 +182,15 @@ export function LiveResistome({ className = '' }: { className?: string }) {
         setLabel(seg.label)
       }
 
-      // motion trails
-      ctx!.fillStyle = 'rgba(14, 52, 53, 0.3)'
-      ctx!.fillRect(0, 0, width, height)
+      // motion trails over the agar backdrop (keeps the photo alive underneath)
+      if (bgReady) {
+        ctx!.globalAlpha = 0.34
+        ctx!.drawImage(bgCanvas, 0, 0, width, height)
+        ctx!.globalAlpha = 1
+      } else {
+        ctx!.fillStyle = 'rgba(14, 52, 53, 0.3)'
+        ctx!.fillRect(0, 0, width, height)
+      }
 
       const k = seg.mode === 'gather' ? 0.014 : 0.038
       for (const p of particles) {
@@ -211,8 +241,14 @@ export function LiveResistome({ className = '' }: { className?: string }) {
           p.y += p.vy
         }
       }
-      ctx.fillStyle = BG
-      ctx.fillRect(0, 0, width, height)
+      if (bgReady) {
+        ctx!.globalAlpha = 1
+        ctx!.drawImage(bgCanvas, 0, 0, width, height)
+        ctx!.globalAlpha = 1
+      } else {
+        ctx!.fillStyle = BG
+        ctx!.fillRect(0, 0, width, height)
+      }
       frame(performance.now())
     }
 
