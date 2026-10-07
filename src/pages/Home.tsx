@@ -346,7 +346,7 @@ export function Home() {
               Evidence that connects people, pathogens, and places.
             </h2>
             <p className="mt-5 text-lg leading-relaxed text-muted-foreground">
-              Dr. Muhammad Shafiq is an Associate Professor in the Department of Clinical Pharmacy
+              Dr. Muhammad Shafiq is a Senior Researcher in the Department of Clinical Pharmacy
               at Shantou University Medical College. His work investigates antimicrobial
               resistance within a One Health framework.
             </p>

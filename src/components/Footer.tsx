@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Mail, MapPin, GraduationCap, Fingerprint, Linkedin } from 'lucide-react'
+import { Mail, MapPin, GraduationCap, Fingerprint, Linkedin, Phone } from 'lucide-react'
 import { Logo } from './Logo'
 import { navItems, site } from '@/data/site'
 
@@ -55,10 +55,26 @@ export function Footer() {
             <ul className="mt-4 space-y-3 text-sm text-primary-foreground/80">
               <li className="flex items-start gap-2.5">
                 <Mail className="mt-0.5 h-4 w-4 shrink-0 text-primary-foreground/60" />
-                <a href={`mailto:${site.email}`} className="hover:text-primary-foreground">
-                  {site.email}
-                </a>
+                <span>
+                  <a href={`mailto:${site.email}`} className="block hover:text-primary-foreground">
+                    {site.email}
+                  </a>
+                  <a
+                    href={`mailto:${site.emailUniversity}`}
+                    className="block text-primary-foreground/65 hover:text-primary-foreground"
+                  >
+                    {site.emailUniversity}
+                  </a>
+                </span>
               </li>
+              {site.phone && (
+                <li className="flex items-start gap-2.5">
+                  <Phone className="mt-0.5 h-4 w-4 shrink-0 text-primary-foreground/60" />
+                  <a href={`tel:${site.phone.replace(/\s/g, '')}`} className="hover:text-primary-foreground">
+                    {site.phone}
+                  </a>
+                </li>
+              )}
               <li className="flex items-start gap-2.5">
                 <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-primary-foreground/60" />
                 <span>

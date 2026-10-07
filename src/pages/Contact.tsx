@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
-import { Mail, MapPin, Building2, Send, CheckCircle2 } from 'lucide-react'
+import { Mail, MapPin, Building2, Send, CheckCircle2, Phone } from 'lucide-react'
 import { PageHeader } from '@/components/PageHeader'
 import { Reveal } from '@/components/Reveal'
 import { site } from '@/data/site'
@@ -62,6 +62,23 @@ export function Contact() {
                       Email
                     </p>
                     <p className="mt-1 font-medium group-hover:underline">{site.email}</p>
+                    <p className="text-sm text-muted-foreground">{site.emailUniversity}</p>
+                  </div>
+                </a>
+              </Reveal>
+              <Reveal delay={0.08}>
+                <a
+                  href={`tel:${site.phone.replace(/\s/g, '')}`}
+                  className="group flex items-center gap-5 rounded-3xl border border-border bg-card p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/10"
+                >
+                  <span className="rounded-2xl bg-primary/10 p-3.5 text-primary">
+                    <Phone className="h-6 w-6" />
+                  </span>
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+                      Phone
+                    </p>
+                    <p className="mt-1 font-medium group-hover:underline">{site.phone}</p>
                   </div>
                 </a>
               </Reveal>

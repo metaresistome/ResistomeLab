@@ -1,9 +1,19 @@
 import { Link } from 'react-router-dom'
-import { GraduationCap, Fingerprint, Linkedin, MapPin, Mail, BookOpen } from 'lucide-react'
+import {
+  GraduationCap,
+  Fingerprint,
+  Linkedin,
+  MapPin,
+  Mail,
+  BookOpen,
+  ExternalLink,
+  Quote,
+  Award,
+} from 'lucide-react'
 import { PageHeader } from '@/components/PageHeader'
 import { Reveal } from '@/components/Reveal'
 import { CtaBand } from '@/components/CtaBand'
-import { site, principles } from '@/data/site'
+import { site, pi, principles } from '@/data/site'
 
 export function About() {
   return (
@@ -11,7 +21,7 @@ export function About() {
       <PageHeader
         kicker="Principal investigator"
         title="Dr. Muhammad Shafiq"
-        subtitle="Associate Professor · AMR · One Health — Department of Clinical Pharmacy, Shantou University Medical College"
+        subtitle="Senior Researcher · AMR · One Health — Department of Clinical Pharmacy, Shantou University Medical College"
         image="/images/page-profile.jpg"
       />
 
@@ -43,9 +53,17 @@ export function About() {
                 </div>
                 <div className="flex items-center gap-3">
                   <Mail className="h-4 w-4 shrink-0 text-primary" />
-                  <a href={`mailto:${site.email}`} className="text-sm font-medium hover:underline">
-                    {site.email}
-                  </a>
+                  <div>
+                    <a href={`mailto:${site.email}`} className="block text-sm font-medium hover:underline">
+                      {site.email}
+                    </a>
+                    <a
+                      href={`mailto:${site.emailUniversity}`}
+                      className="block text-xs text-muted-foreground hover:underline"
+                    >
+                      {site.emailUniversity}
+                    </a>
+                  </div>
                 </div>
                 <div className="flex gap-2.5 pt-2">
                   <a
@@ -56,6 +74,15 @@ export function About() {
                     className="rounded-full bg-secondary p-2.5 text-secondary-foreground transition-colors hover:bg-primary hover:text-primary-foreground"
                   >
                     <GraduationCap className="h-4 w-4" />
+                  </a>
+                  <a
+                    href={site.links.researchgate}
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label="ResearchGate"
+                    className="rounded-full bg-secondary p-2.5 text-secondary-foreground transition-colors hover:bg-primary hover:text-primary-foreground"
+                  >
+                    <ExternalLink className="h-4 w-4" />
                   </a>
                   <a
                     href={site.links.orcid}
@@ -90,7 +117,7 @@ export function About() {
             </Reveal>
             <Reveal delay={0.1}>
               <p className="mt-6 text-lg leading-relaxed text-muted-foreground">
-                Dr. Muhammad Shafiq is an Associate Professor in the Department of Clinical
+                Dr. Muhammad Shafiq is a Senior Researcher in the Department of Clinical
                 Pharmacy at Shantou University Medical College. His work investigates
                 antimicrobial resistance within a One Health framework.
               </p>
@@ -100,6 +127,25 @@ export function About() {
                 settings — bringing microbiology, data interpretation, and public-health context
                 into the same conversation.
               </p>
+              <p className="mt-4 text-lg leading-relaxed text-muted-foreground">
+                He serves as an Associate Editor for <em>Virulence</em> (Taylor &amp; Francis)
+                and is a member of the American Society for Microbiology and ESCMID.
+              </p>
+            </Reveal>
+
+            <Reveal delay={0.12}>
+              <dl className="mt-10 grid grid-cols-2 gap-px overflow-hidden rounded-3xl border border-border bg-border sm:grid-cols-4">
+                {pi.metrics.map((m) => (
+                  <div key={m.label} className="flex flex-col bg-card p-5 text-center sm:p-6">
+                    <dt className="order-2 mt-1.5 block text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+                      {m.label}
+                    </dt>
+                    <dd className="font-display order-1 block text-3xl font-semibold text-primary sm:text-4xl">
+                      {m.value}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
             </Reveal>
 
             <Reveal delay={0.15}>
@@ -138,6 +184,102 @@ export function About() {
               </div>
             </Reveal>
           </div>
+        </div>
+      </section>
+
+      {/* ── Education & appointments ─────────────────────── */}
+      <section className="border-t border-border bg-secondary/40">
+        <div className="mx-auto max-w-7xl px-5 py-24 sm:px-8">
+          <div className="grid gap-14 lg:grid-cols-2 lg:gap-20">
+            <div>
+              <Reveal>
+                <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.28em] text-accent">
+                  <GraduationCap className="h-4 w-4" />
+                  Education
+                </p>
+                <h2 className="font-display mt-3 text-balance text-3xl font-semibold tracking-tight sm:text-4xl">
+                  Training that bridges veterinary and human health.
+                </h2>
+              </Reveal>
+              <div className="mt-10 space-y-0">
+                {pi.education.map((e, i) => (
+                  <Reveal key={e.degree} delay={i * 0.08}>
+                    <div className="relative border-l-2 border-border pl-7 pb-8 last:pb-0">
+                      <span className="absolute -left-[5px] top-1.5 h-2 w-2 rounded-full bg-primary" />
+                      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                        {e.years}
+                      </p>
+                      <h3 className="font-display mt-1.5 text-lg font-semibold tracking-tight">
+                        {e.degree}
+                      </h3>
+                      <p className="text-sm text-muted-foreground">{e.institution}</p>
+                    </div>
+                  </Reveal>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <Reveal>
+                <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.28em] text-accent">
+                  <Award className="h-4 w-4" />
+                  Appointments
+                </p>
+                <h2 className="font-display mt-3 text-balance text-3xl font-semibold tracking-tight sm:text-4xl">
+                  A career built across three countries.
+                </h2>
+              </Reveal>
+              <div className="mt-10 space-y-0">
+                {pi.appointments.map((a, i) => (
+                  <Reveal key={a.role} delay={i * 0.08}>
+                    <div className="relative border-l-2 border-border pl-7 pb-8 last:pb-0">
+                      <span className="absolute -left-[5px] top-1.5 h-2 w-2 rounded-full bg-accent" />
+                      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                        {a.years}
+                      </p>
+                      <h3 className="font-display mt-1.5 text-lg font-semibold tracking-tight">
+                        {a.role}
+                      </h3>
+                      <p className="text-sm text-muted-foreground">{a.institution}</p>
+                    </div>
+                  </Reveal>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <Reveal delay={0.1}>
+            <div className="mt-16 grid gap-6 rounded-3xl border border-border bg-card p-8 sm:grid-cols-2 sm:p-10">
+              <div>
+                <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.22em] text-primary">
+                  <Quote className="h-4 w-4" />
+                  Editorial service
+                </p>
+                <ul className="mt-4 space-y-2.5">
+                  {pi.editorial.map((item) => (
+                    <li key={item} className="flex items-start gap-2.5 text-sm leading-relaxed text-muted-foreground">
+                      <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div>
+                <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.22em] text-primary">
+                  <Fingerprint className="h-4 w-4" />
+                  Memberships
+                </p>
+                <ul className="mt-4 space-y-2.5">
+                  {pi.memberships.map((item) => (
+                    <li key={item} className="flex items-start gap-2.5 text-sm leading-relaxed text-muted-foreground">
+                      <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-accent" />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </Reveal>
         </div>
       </section>
 

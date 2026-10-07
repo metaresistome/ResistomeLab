@@ -1,8 +1,8 @@
-import { BookOpen, GraduationCap, Fingerprint, ArrowUpRight } from 'lucide-react'
+import { BookOpen, GraduationCap, Fingerprint, ArrowUpRight, ExternalLink } from 'lucide-react'
 import { PageHeader } from '@/components/PageHeader'
 import { Reveal } from '@/components/Reveal'
 import { CtaBand } from '@/components/CtaBand'
-import { featuredPublication, site } from '@/data/site'
+import { featuredPublication, selectedPublications, site } from '@/data/site'
 
 const profileLinks = [
   {
@@ -18,6 +18,12 @@ const profileLinks = [
     icon: Fingerprint,
   },
   {
+    label: 'ResearchGate',
+    note: 'Full-text publications & projects',
+    href: site.links.researchgate,
+    icon: BookOpen,
+  },
+  {
     label: 'LinkedIn',
     note: 'Professional profile',
     href: site.links.linkedin,
@@ -31,9 +37,9 @@ export function Publications() {
       <PageHeader
         kicker="Publications"
         title="Research output, made easy to follow."
-        subtitle="A growing record of verified papers, research outputs, and scholarly routes connected to Resistome Lab."
+        subtitle="89 peer-reviewed outputs (83 journal articles, 6 book chapters) — 23 as first or corresponding author, with 1,700+ citations."
         image="/images/page-publications.jpg"
-        imageAlt="Scientific literature and microbiology still life"
+        imageAlt="Scientific literature and citation networks"
       />
 
       {/* Featured */}
@@ -53,7 +59,7 @@ export function Publications() {
                 {featuredPublication.title}
               </h2>
               <p className="mt-4 font-medium text-foreground/80">
-                {featuredPublication.journal} · {featuredPublication.year}
+                {featuredPublication.journal} · {featuredPublication.year} · IF 16.3 (Q1)
               </p>
               <p className="mt-4 leading-relaxed text-muted-foreground">
                 {featuredPublication.summary}
@@ -70,6 +76,55 @@ export function Publications() {
             </div>
           </div>
         </Reveal>
+
+        {/* Selected publications */}
+        <div className="mt-24">
+          <Reveal className="max-w-2xl">
+            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-accent">
+              Selected publications
+            </p>
+            <h2 className="font-display mt-3 text-balance text-4xl font-semibold tracking-tight sm:text-5xl">
+              First & corresponding-author work.
+            </h2>
+          </Reveal>
+
+          <div className="mt-10 divide-y divide-border overflow-hidden rounded-3xl border border-border bg-card">
+            {selectedPublications.map((pub, i) => (
+              <Reveal key={pub.doi} delay={Math.min(i * 0.04, 0.2)}>
+                <a
+                  href={pub.doi}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="group grid gap-3 p-6 transition-colors hover:bg-secondary/50 sm:grid-cols-[64px_1fr_auto] sm:items-center sm:gap-6 sm:p-7"
+                >
+                  <span className="font-display text-2xl font-semibold text-primary/30 transition-colors group-hover:text-primary sm:text-3xl">
+                    {pub.year}
+                  </span>
+                  <span>
+                    <span className="font-display block text-lg font-semibold leading-snug tracking-tight decoration-primary decoration-2 underline-offset-4 group-hover:underline">
+                      {pub.title}
+                    </span>
+                    <span className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
+                      <span className="font-medium text-foreground/75">{pub.journal}</span>
+                      <span aria-hidden="true">·</span>
+                      <span>{pub.role}</span>
+                    </span>
+                  </span>
+                  <span className="hidden rounded-full border border-border p-2.5 text-muted-foreground transition-all group-hover:border-primary group-hover:bg-primary group-hover:text-primary-foreground sm:block">
+                    <ExternalLink className="h-4 w-4" />
+                  </span>
+                </a>
+              </Reveal>
+            ))}
+          </div>
+
+          <Reveal delay={0.1}>
+            <p className="mt-6 text-sm text-muted-foreground">
+              A complete record of 83 journal articles and 6 book chapters is available through the
+              verified scholarly profiles below.
+            </p>
+          </Reveal>
+        </div>
       </section>
 
       {/* Scholarly routes */}
@@ -88,9 +143,9 @@ export function Publications() {
               links below.
             </p>
           </Reveal>
-          <div className="mt-12 grid gap-6 md:grid-cols-3">
+          <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {profileLinks.map((link, i) => (
-              <Reveal key={link.label} delay={i * 0.08}>
+              <Reveal key={link.label} delay={i * 0.06}>
                 <a
                   href={link.href}
                   target="_blank"

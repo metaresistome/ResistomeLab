@@ -1,7 +1,9 @@
 export const site = {
   name: 'Resistome Lab',
   tagline: 'AMR · GENOMICS · ONE HEALTH',
-  email: 'drshafiq@stu.edu.cn',
+  email: 'drshafiq@resistomelab.com',
+  emailUniversity: 'drshafiq@stu.edu.cn',
+  phone: '+86-166-6020-2550',
   affiliation: 'Shantou University Medical College',
   department: 'Department of Clinical Pharmacy',
   address: 'Teaching and Research Building, Room 408 · Shantou, China',
@@ -9,9 +11,139 @@ export const site = {
     scholar: 'https://scholar.google.com/citations?user=JIu0J7AAAAAJ&hl=en',
     orcid: 'https://orcid.org/0000-0002-4346-5903',
     linkedin: 'https://www.linkedin.com/in/muhammad-shafiq-81162b1b9/',
+    researchgate: 'https://www.researchgate.net/profile/Muhammad-Shafiq-9',
     doi: 'https://doi.org/10.1146/annurev-environ-102125-040356',
   },
 }
+
+export const pi = {
+  title: 'Senior Researcher',
+  metrics: [
+    { value: '89', label: 'Peer-reviewed outputs' },
+    { value: '23', label: 'First / corresponding author' },
+    { value: '1,700+', label: 'Citations' },
+    { value: '24', label: 'h-index' },
+  ],
+  education: [
+    {
+      years: '2016 – 2019',
+      degree: 'Ph.D., Pharmacology & Toxicology',
+      institution: 'Nanjing Agricultural University, China',
+    },
+    {
+      years: '2014 – 2016',
+      degree: 'M.Sc., Breeding & Genetics',
+      institution: 'The University of Agriculture, Peshawar, Pakistan',
+    },
+    {
+      years: '2010 – 2014',
+      degree: 'D.V.M., Doctor of Veterinary Medicine',
+      institution: 'The University of Agriculture, Peshawar, Pakistan',
+    },
+  ],
+  appointments: [
+    {
+      years: '2026 – Present',
+      role: 'Senior Researcher',
+      institution: 'Department of Clinical Pharmacy, Shantou University Medical College, China',
+    },
+    {
+      years: '2025 – 2026',
+      role: 'Marie Skłodowska-Curie (MSCA) Individual Fellow — ONISILOS',
+      institution: 'NIREAS – International Water Research Institute, University of Cyprus',
+    },
+    {
+      years: '2023 – 2025',
+      role: 'Associate Researcher / Associate Professor',
+      institution: 'Shantou University Medical College, China',
+    },
+    {
+      years: '2021 – 2023',
+      role: 'Postdoctoral Fellow',
+      institution: 'Shantou University Medical College, China',
+    },
+  ],
+  editorial: [
+    'Associate Editor — Virulence (Taylor & Francis)',
+    'Guest Editor — Frontiers in Cellular and Infection Microbiology',
+    'Review Editor — Microbiology Spectrum, Scientific Reports, One Health, FEMS, Frontiers in Microbiology, Antibiotics, and others',
+  ],
+  memberships: ['American Society for Microbiology (ASM)', 'ESCMID — European Society of Clinical Microbiology and Infectious Diseases'],
+}
+
+export type SelectedPublication = {
+  year: string
+  title: string
+  journal: string
+  role: string
+  doi: string
+}
+
+export const selectedPublications: SelectedPublication[] = [
+  {
+    year: '2026',
+    title:
+      'From commensal to pathobiont: The emergence of virulence-enhanced Escherichia coli in China’s food-animal systems',
+    journal: 'Food Research International',
+    role: 'Equal Corresponding Author',
+    doi: 'https://doi.org/10.1016/j.foodres.2026.120414',
+  },
+  {
+    year: '2026',
+    title:
+      'Metagenomic surveillance identifies a high-risk antibiotic resistance profile in community wastewater: a pilot study from Pakistan',
+    journal: 'Naunyn-Schmiedeberg’s Archives of Pharmacology',
+    role: 'Equal Corresponding Author',
+    doi: 'https://doi.org/10.1007/s00210-026-05471-x',
+  },
+  {
+    year: '2026',
+    title:
+      'Genomic insights into mcr-mediated colistin resistance in Escherichia coli, Aeromonas veronii, and Enterobacter kobei from wastewater',
+    journal: 'Journal of Applied Microbiology',
+    role: 'Corresponding Author',
+    doi: 'https://doi.org/10.1093/jambio/lxaf307',
+  },
+  {
+    year: '2025',
+    title:
+      'Peste des petits ruminants in Pakistan: current status, challenges and prospects for vaccine development',
+    journal: 'Vaccines',
+    role: 'Corresponding Author',
+    doi: 'https://doi.org/10.3390/vaccines13111101',
+  },
+  {
+    year: '2024',
+    title:
+      'Ecological consequences of antimicrobial residues and bioactive chemicals on antimicrobial resistance in agroecosystems',
+    journal: 'Journal of Advanced Research',
+    role: 'First & Corresponding Author',
+    doi: 'https://doi.org/10.1016/j.jare.2024.10.013',
+  },
+  {
+    year: '2024',
+    title:
+      'Integrative metagenomic dissection of last-resort antibiotic resistance genes and mobile genetic elements in hospital wastewaters',
+    journal: 'Science of The Total Environment',
+    role: 'First Author',
+    doi: 'https://doi.org/10.1016/j.scitotenv.2024.174930',
+  },
+  {
+    year: '2022',
+    title:
+      'Coexistence of blaNDM-5 and tet(X4) in international high-risk Escherichia coli clone ST648 of human origin in China',
+    journal: 'Frontiers in Microbiology',
+    role: 'First Author',
+    doi: 'https://doi.org/10.3389/fmicb.2022.1031688',
+  },
+  {
+    year: '2022',
+    title: 'Synergistic activity of tetrandrine and colistin against mcr-1-harboring Escherichia coli',
+    journal: 'Antibiotics',
+    role: 'First Author',
+    doi: 'https://doi.org/10.3390/antibiotics11101346',
+  },
+]
 
 export type ResearchArea = {
   id: string
