@@ -219,7 +219,42 @@ export const featuredPublication = {
     'Dr. Muhammad Shafiq and colleagues review how biosensor monitoring, multi-omics, AI-supported surveillance, and sustainable remediation can strengthen One Health approaches to AMR in agroecosystems.',
 }
 
-export const newsItems = [
+export type NewsItem = {
+  date: string
+  category: string
+  title: string
+  text: string
+  href?: string
+  linkLabel?: string
+}
+
+export const newsItems: NewsItem[] = [
+  {
+    date: 'Closing soon',
+    category: 'Guest-edited special issue · Frontiers in Microbiology (IF 5.8)',
+    title: 'Drug-Resistant Bacterial and Fungal Infections in Immunocompromised Patients',
+    text: 'Now a guest editor of this Frontiers research topic on the burden, drivers, and clinical impact of drug-resistant bacterial and fungal infections in immunocompromised patients — with a focus on hospital antimicrobial consumption, stewardship, molecular diagnostics, and precision therapy. The topic is accepting manuscripts but closing soon.',
+    href: 'https://www.frontiersin.org/research-topics/77262/drug-resistant-bacterial-and-fungal-infections-in-immunocompromised-patients',
+    linkLabel: 'View the special issue',
+  },
+  {
+    date: 'Deadline · 19 Feb 2027',
+    category: 'Guest-edited special issue · Frontiers in Cellular and Infection Microbiology (IF 5.5)',
+    title:
+      'Innate Reproductive Immunology and Microbial Recognition Mechanisms in Mammalian Reproductive Systems, Volume II',
+    text: 'Serving as a topic editor for the second volume of this collection on pattern recognition receptors, antimicrobial peptides, reproductive-tract microbiota, and immune tolerance in mammalian reproduction — now open for mini-reviews, full reviews, and original research.',
+    href: 'https://www.frontiersin.org/research-topics/83725/innate-reproductive-immunology-and-microbial-recognition-mechanisms-in-mammalian-reproductive-systems-volume-ii',
+    linkLabel: 'View the special issue',
+  },
+  {
+    date: 'Deadline · 24 Mar 2027',
+    category: 'Guest-edited special issue · Frontiers in Public Health (IF 4.1)',
+    title:
+      'Approaches for Emerging Contaminants: Toward Intelligent Omics-Enabled Monitoring and Mitigation',
+    text: 'Guest-editing this research topic on integrated sensing, physics-informed and machine-learning modelling, and omics-based approaches to monitor and mitigate emerging contaminants and the spread of antimicrobial resistance in environmental systems.',
+    href: 'https://www.frontiersin.org/research-topics/80639/approaches-for-emerging-contaminants-toward-intelligent-omics-enabled-monitoring-and-mitigation',
+    linkLabel: 'View the special issue',
+  },
   {
     date: 'Featured',
     category: 'New publications & data',

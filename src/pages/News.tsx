@@ -46,7 +46,7 @@ export function News() {
                   {featured.text}
                 </p>
                 <span className="mt-6 inline-flex items-center gap-1.5 text-sm font-semibold text-primary">
-                  Read the publication
+                  {featured.linkLabel ?? 'Read the publication'}
                   <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                 </span>
               </div>
@@ -69,6 +69,17 @@ export function News() {
                   {item.title}
                 </h3>
                 <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{item.text}</p>
+                {item.href ? (
+                  <a
+                    href={item.href}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="group/link mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-primary"
+                  >
+                    {item.linkLabel ?? 'Read more'}
+                    <ArrowUpRight className="h-4 w-4 transition-transform group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5" />
+                  </a>
+                ) : null}
               </div>
             </Reveal>
           ))}
