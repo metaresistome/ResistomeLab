@@ -1,6 +1,7 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { ArrowRight, ArrowUpRight, BookOpen } from 'lucide-react'
+import { ArrowRight, ArrowUpRight, BookOpen, Volume2, VolumeX } from 'lucide-react'
 import { Reveal } from '@/components/Reveal'
 import { CtaBand } from '@/components/CtaBand'
 import {
@@ -21,6 +22,7 @@ const marqueeWords = [
 ]
 
 export function Home() {
+  const [heroMuted, setHeroMuted] = useState(true)
   return (
     <div>
       {/* ── Hero ─────────────────────────────────────────── */}
@@ -74,11 +76,20 @@ export function Home() {
                 src="/videos/hero.mp4"
                 poster="/images/hero-poster.jpg"
                 autoPlay
-                muted
+                muted={heroMuted}
                 loop
                 playsInline
-                aria-label="One Health animation: antimicrobial resistance spreading between humans, animals, and environments"
+                aria-label="One Health animation with narration: antimicrobial resistance spreading between humans, animals, and environments"
               />
+              <button
+                type="button"
+                onClick={() => setHeroMuted((m) => !m)}
+                aria-label={heroMuted ? 'Turn sound on' : 'Turn sound off'}
+                className="absolute bottom-4 right-4 inline-flex items-center gap-2 rounded-full bg-primary-foreground/90 px-4 py-2 text-xs font-semibold text-primary shadow-lg backdrop-blur transition-all hover:bg-primary-foreground"
+              >
+                {heroMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+                {heroMuted ? 'Sound off' : 'Sound on'}
+              </button>
             </div>
           </Reveal>
         </div>
