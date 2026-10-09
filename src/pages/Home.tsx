@@ -50,7 +50,16 @@ export function Home() {
     <div>
       {/* ── Hero ─────────────────────────────────────────── */}
       <section className="relative overflow-hidden pt-16">
-        <div className="absolute inset-0 bg-dot-grid opacity-60" aria-hidden="true" />
+        <div className="absolute inset-0" aria-hidden="true">
+          <img
+            src="/images/sumc-campus.jpg"
+            alt=""
+            className="h-full w-full object-cover opacity-[0.12]"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-background via-background/85 to-background" />
+          <div className="absolute inset-0 bg-gradient-to-r from-background via-background/80 to-background/40" />
+          <div className="absolute inset-0 bg-dot-grid opacity-60" />
+        </div>
         <div className="relative mx-auto grid max-w-7xl items-center gap-12 px-5 pb-20 pt-14 sm:px-8 lg:grid-cols-[1.05fr_0.95fr] lg:pb-28 lg:pt-20">
           <div>
             <Reveal>
