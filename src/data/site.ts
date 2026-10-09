@@ -324,6 +324,24 @@ export const students: Student[] = [
     bio: 'Omnia holds a Bachelor’s degree in Microbiology and Parasitology from Ibn Sina University and completed a qualifying year at the Institute of Endemic Diseases, University of Khartoum. She spent five years in hospital laboratories across Sudan, building strong expertise in clinical microbiology and parasitology diagnostics, and in 2023 collaborated with Shantou University researchers to develop an AI-powered microscope for malaria parasite detection. Her current Master’s research focuses on antimicrobial resistance, applying PCR, R, and Python to understand and combat resistance.',
     tags: ['AMR', 'Clinical Microbiology', 'PCR', 'R & Python'],
   },
+  {
+    name: 'Jilong Wu',
+    program: 'M.S. Candidate · Cell Biology',
+    photo: '/images/students/student-jilong-wu.webp',
+    photoAlt: 'Portrait of Jilong Wu',
+    bio: 'Jilong Wu earned his bachelor’s degree at Jiangsu University of Science and Technology and is pursuing a Master’s in Cell Biology in the Department of Cell Biology and Genetics at Shantou University Medical College, under the supervision of Dr. Muhammad Shafiq. His research investigates antibiotic resistance in Staphylococcus aureus — combining molecular microbiology with genomic approaches to understand how resistance emerges, persists, and spreads in this priority pathogen.',
+    tags: ['AMR', 'S. aureus', 'Molecular Microbiology'],
+    email: 'wujilong25@gmail.com',
+  },
+  {
+    name: 'Jiaqi Chen',
+    program: 'M.S. Candidate · Cell Biology',
+    photo: '/images/students/student-jiaqi-chen.webp',
+    photoAlt: 'Portrait of Jiaqi Chen',
+    bio: 'Jiaqi Chen holds a Bachelor’s degree in Biological Sciences from Jiaying University and is now a Master’s student in Cell Biology at Shantou University Medical College, supervised by Dr. Muhammad Shafiq. Her research applies metagenomic analysis to lower respiratory tract infections — characterizing the microbiota and resistance signatures of clinical samples to better understand the dynamics of respiratory infection and inform more precise diagnosis and treatment.',
+    tags: ['Metagenomics', 'Respiratory Infections', 'Clinical Microbiology'],
+    email: '25jqchen1@stu.edu.cn',
+  },
 ]
 
 export const groupCards = [
