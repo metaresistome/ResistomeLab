@@ -35,7 +35,7 @@ export function Group() {
                   <img
                     src={student.photo}
                     alt={student.photoAlt}
-                    className="aspect-[3/4] w-full object-cover object-top"
+                    className="aspect-[4/3] w-full object-cover object-top"
                   />
                   <span className="absolute bottom-4 left-4 rounded-full bg-primary px-3.5 py-1.5 text-xs font-semibold text-primary-foreground">
                     {student.program}
