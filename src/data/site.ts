@@ -226,9 +226,21 @@ export type NewsItem = {
   text: string
   href?: string
   linkLabel?: string
+  image?: string
+  imageAlt?: string
 }
 
 export const newsItems: NewsItem[] = [
+  {
+    date: 'New launch',
+    category: 'Guest-edited special issue · Frontiers in Microbiology (IF 5.8)',
+    title: 'Transforming Phage Therapy: One Health Strategies Against Antimicrobial Resistance',
+    text: 'Now launching this Frontiers research topic on bacteriophage therapy as a targeted answer to drug-resistant pathogens across human, animal, and environmental settings — covering phage isolation, personalized phage treatment, phage–antibiotic synergy, cocktail standardization, and the regulatory and manufacturing hurdles limiting clinical adoption. Manuscript summary deadline 28 January 2027; full manuscript submission 31 May 2027.',
+    href: 'https://www.frontiersin.org/research-topics/86182/transforming-phage-therapy-one-health-strategies-against-antimicrobial-resistance',
+    linkLabel: 'View the special issue',
+    image: '/images/news/phage-therapy-topic.jpg',
+    imageAlt: 'Transforming Phage Therapy: One Health Strategies Against Antimicrobial Resistance — Frontiers in Microbiology research topic',
+  },
   {
     date: 'Closing soon',
     category: 'Guest-edited special issue · Frontiers in Microbiology (IF 5.8)',

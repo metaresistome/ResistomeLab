@@ -27,8 +27,8 @@ export function News() {
             <div className="grid lg:grid-cols-[1.15fr_1fr]">
               <div className="relative min-h-[260px] overflow-hidden">
                 <img
-                  src="/images/page-publications.jpg"
-                  alt="Scientific literature and microbiology still life"
+                  src={featured.image ?? '/images/page-publications.jpg'}
+                  alt={featured.imageAlt ?? 'Scientific literature and microbiology still life'}
                   className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                 />
               </div>
