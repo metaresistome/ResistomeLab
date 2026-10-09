@@ -20,7 +20,7 @@ export function Group() {
       <section className="mx-auto max-w-7xl px-5 py-24 sm:px-8">
         <Reveal className="max-w-2xl">
           <p className="text-xs font-semibold uppercase tracking-[0.28em] text-accent">
-            Master’s students
+            Our team
           </p>
           <h2 className="font-display mt-3 text-balance text-4xl font-semibold tracking-tight sm:text-5xl">
             The people behind the signals.

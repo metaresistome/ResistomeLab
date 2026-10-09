@@ -300,6 +300,15 @@ export type Student = {
 
 export const students: Student[] = [
   {
+    name: 'Jilong Wu',
+    program: 'Research Assistant · Cell Biology',
+    photo: '/images/students/student-jilong-wu.webp',
+    photoAlt: 'Portrait of Jilong Wu',
+    bio: 'Jilong Wu earned his Master’s degree in Cell Biology from Shantou University Medical College in 2026 and his Bachelor’s degree in Bioengineering from Jiangsu University of Science and Technology in 2019. He manages daily laboratory operations and research workflows, with solid competencies in molecular biology, cell biology, and bioinformatics. He is proficient in Linux and Shell scripting, uses Conda for environment and dependency management, and builds automated data processing and visualization pipelines in R. His research focuses on antimicrobial resistance and the genomic evolutionary mechanisms of Staphylococcus aureus under a One Health framework.',
+    tags: ['AMR', 'S. aureus', 'Bioinformatics & Automation'],
+    email: 'wujilong25@gmail.com',
+  },
+  {
     name: 'Eltayeb Mohamedelmamoun Abdulaziz Algimeabi',
     program: 'M.S. Candidate · Pharmacology',
     photo: '/images/students/student-eltayeb.webp',
@@ -322,15 +331,6 @@ export const students: Student[] = [
     photoAlt: 'Portrait of Omnia Sharif Mahmoud Sharif',
     bio: 'Omnia earned her Bachelor’s degree in Microbiology and Parasitology from Ibn Sina University in Khartoum, then spent five years in Sudanese hospital laboratories working in clinical microbiology and diagnostics. In 2023 she joined Shantou University researchers to develop an AI-powered microscope for malaria detection. Her Master’s research now targets antimicrobial resistance using PCR, R, and Python.',
     tags: ['AMR', 'Clinical Microbiology', 'PCR', 'R & Python'],
-  },
-  {
-    name: 'Jilong Wu',
-    program: 'Research Assistant · Cell Biology',
-    photo: '/images/students/student-jilong-wu.webp',
-    photoAlt: 'Portrait of Jilong Wu',
-    bio: 'Jilong Wu earned his bachelor’s degree at Jiangsu University of Science and Technology and completed his Master’s in Cell Biology at Shantou University Medical College, co-supervised by Prof. Jiao Xiaoyang and Dr. Muhammad Shafiq. He continues in the lab as a research assistant with Prof. Jiao, investigating antibiotic resistance in Staphylococcus aureus using molecular microbiology and genomics.',
-    tags: ['AMR', 'S. aureus', 'Molecular Microbiology'],
-    email: 'wujilong25@gmail.com',
   },
   {
     name: 'Jiaqi Chen',
