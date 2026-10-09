@@ -1,7 +1,25 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { ArrowRight, ArrowUpRight, BookOpen, Volume2, VolumeX } from 'lucide-react'
+import {
+  ArrowRight,
+  ArrowUpRight,
+  BookOpen,
+  Volume2,
+  VolumeX,
+  Bug,
+  Biohazard,
+  Stethoscope,
+  TestTubes,
+  Droplets,
+  Globe,
+  Dna,
+  Microscope,
+  Syringe,
+  ScanSearch,
+  TrendingUp,
+  ShieldAlert,
+} from 'lucide-react'
 import { Reveal } from '@/components/Reveal'
 import { CtaBand } from '@/components/CtaBand'
 import {
@@ -12,13 +30,18 @@ import {
 } from '@/data/site'
 
 const marqueeWords = [
-  'Antimicrobial resistance',
-  'Genomics',
-  'One Health',
-  'Metagenomics',
-  'Wastewater surveillance',
-  'Bioinformatics',
-  'Meta-analysis',
+  { label: 'Antimicrobial resistance', Icon: ShieldAlert },
+  { label: 'Bacterial resistome', Icon: Bug },
+  { label: 'Fungal resistome', Icon: Biohazard },
+  { label: 'Clinical pathogens', Icon: Stethoscope },
+  { label: 'Microbiota', Icon: TestTubes },
+  { label: 'Wastewater-based epidemiology', Icon: Droplets },
+  { label: 'One Health', Icon: Globe },
+  { label: 'Pathogen genomics', Icon: Dna },
+  { label: 'Metagenomics', Icon: Microscope },
+  { label: 'Phage therapy', Icon: Syringe },
+  { label: 'Bioinformatics', Icon: ScanSearch },
+  { label: 'Meta-analysis', Icon: TrendingUp },
 ]
 
 export function Home() {
@@ -95,19 +118,91 @@ export function Home() {
         </div>
       </section>
 
+      {/* ── Special issue announcement ───────────────────── */}
+      <section className="mx-auto max-w-7xl px-5 pb-4 sm:px-8">
+        <Reveal>
+          <a
+            href="https://www.frontiersin.org/research-topics/86182/transforming-phage-therapy-one-health-strategies-against-antimicrobial-resistance"
+            target="_blank"
+            rel="noreferrer"
+            className="group block overflow-hidden rounded-3xl border border-border bg-card shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/10"
+          >
+            <div className="grid md:grid-cols-[0.85fr_1.15fr]">
+              <div className="relative min-h-[240px] overflow-hidden">
+                <img
+                  src="/images/news/phage-therapy-topic.jpg"
+                  alt="Transforming Phage Therapy: One Health Strategies Against Antimicrobial Resistance"
+                  className="absolute inset-0 h-full w-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
+                />
+              </div>
+              <div className="p-8 sm:p-10">
+                <div className="flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.18em]">
+                  <span className="rounded-full bg-accent/10 px-3 py-1 text-accent">
+                    Call for papers
+                  </span>
+                  <span className="text-muted-foreground">
+                    Frontiers in Microbiology (IF 5.8)
+                  </span>
+                </div>
+                <h2 className="font-display mt-5 text-balance text-2xl font-semibold leading-tight tracking-tight sm:text-3xl">
+                  Transforming Phage Therapy: One Health Strategies Against Antimicrobial
+                  Resistance
+                </h2>
+                <p className="mt-4 text-sm leading-relaxed text-muted-foreground sm:text-base">
+                  Our new research topic invites original research and reviews on phage
+                  isolation, personalized phage treatment, phage–antibiotic synergy, and the
+                  regulatory and manufacturing hurdles of clinical adoption.
+                </p>
+                <div className="mt-5 flex flex-wrap gap-2 text-xs font-semibold">
+                  <span className="rounded-full bg-secondary px-3 py-1.5 text-secondary-foreground">
+                    Summary deadline · 28 Jan 2027
+                  </span>
+                  <span className="rounded-full bg-secondary px-3 py-1.5 text-secondary-foreground">
+                    Submission deadline · 31 May 2027
+                  </span>
+                </div>
+                <span className="mt-6 inline-flex items-center gap-1.5 text-sm font-semibold text-primary">
+                  View the research topic
+                  <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                </span>
+              </div>
+            </div>
+          </a>
+        </Reveal>
+      </section>
+
       {/* ── Marquee ──────────────────────────────────────── */}
       <div className="overflow-hidden border-y border-border bg-secondary/60 py-4">
         <motion.div
           className="flex w-max items-center gap-8 whitespace-nowrap mask-fade-r"
           animate={{ x: ['0%', '-50%'] }}
-          transition={{ duration: 28, repeat: Infinity, ease: 'linear' }}
+          transition={{ duration: 36, repeat: Infinity, ease: 'linear' }}
         >
-          {[...marqueeWords, ...marqueeWords, ...marqueeWords, ...marqueeWords].map((w, i) => (
-            <span key={i} className="flex items-center gap-8 text-sm font-semibold uppercase tracking-[0.24em] text-foreground/60">
-              {w}
-              <span className="h-1.5 w-1.5 rounded-full bg-accent" />
-            </span>
-          ))}
+          {[...marqueeWords, ...marqueeWords, ...marqueeWords, ...marqueeWords].map(
+            ({ label, Icon }, i) => (
+              <span
+                key={i}
+                className="flex items-center gap-8 text-sm font-semibold uppercase tracking-[0.24em] text-foreground/60"
+              >
+                <span className="flex items-center gap-2.5">
+                  <motion.span
+                    className="inline-flex rounded-full border border-primary/20 bg-primary/10 p-1.5 text-primary"
+                    animate={{ scale: [1, 1.18, 1] }}
+                    transition={{
+                      duration: 2.2,
+                      repeat: Infinity,
+                      ease: 'easeInOut',
+                      delay: (i % marqueeWords.length) * 0.18,
+                    }}
+                  >
+                    <Icon className="h-3.5 w-3.5" />
+                  </motion.span>
+                  {label}
+                </span>
+                <span className="h-1.5 w-1.5 rounded-full bg-accent" />
+              </span>
+            ),
+          )}
         </motion.div>
       </div>
 
