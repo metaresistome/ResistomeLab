@@ -1,5 +1,4 @@
-import { BookOpen, BookMarked, GraduationCap, Fingerprint, ArrowUpRight, ExternalLink } from 'lucide-react'
-import { PageHeader } from '@/components/PageHeader'
+import { BookOpen, BookMarked, GraduationCap, Fingerprint, ArrowUpRight, ExternalLink, FileText, Quote, BookCopy, Network } from 'lucide-react'
 import { Reveal } from '@/components/Reveal'
 import { CtaBand } from '@/components/CtaBand'
 import { site } from '@/data/site'
@@ -91,13 +90,111 @@ function PublicationEntry({ pub, index }: { pub: Publication; index: number }) {
 export function Publications() {
   return (
     <div>
-      <PageHeader
-        kicker="Publications"
-        title="Research output, made easy to follow."
-        subtitle="89 peer-reviewed outputs (83 journal articles, 6 book chapters) — 23 as first or corresponding author, with 1,700+ citations."
-        image="/images/page-publications.jpg"
-        imageAlt="Scientific literature and citation networks"
-      />
+      {/* Page header with publication infographic */}
+      <section className="relative overflow-hidden bg-primary pt-16 text-primary-foreground">
+        <div className="absolute inset-0 bg-dot-grid-light" aria-hidden="true" />
+        <img
+          src="/images/page-publications.jpg"
+          alt=""
+          className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-25"
+        />
+        <div
+          className="absolute inset-0 bg-gradient-to-t from-primary via-primary/70 to-primary/40"
+          aria-hidden="true"
+        />
+        <div className="relative mx-auto grid max-w-7xl items-center gap-10 px-5 pb-16 pt-20 sm:px-8 sm:pb-24 sm:pt-28 lg:grid-cols-[1fr_auto]">
+          <Reveal>
+            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-primary-foreground/70">
+              Publications
+            </p>
+            <h1 className="font-display mt-4 max-w-3xl text-balance text-4xl font-semibold leading-[1.05] tracking-tight sm:text-5xl lg:text-6xl">
+              Research output, made easy to follow.
+            </h1>
+          </Reveal>
+
+          {/* Citation-network infographic */}
+          <Reveal delay={0.15} className="hidden lg:block">
+            <svg
+              width="360"
+              height="300"
+              viewBox="0 0 360 300"
+              fill="none"
+              aria-hidden="true"
+              className="opacity-90"
+            >
+              {/* connecting citation lines */}
+              <g stroke="#7fc4c9" strokeOpacity="0.5" strokeWidth="1.5">
+                <path d="M70 60 L175 95" />
+                <path d="M70 60 L60 175" />
+                <path d="M175 95 L285 60" />
+                <path d="M175 95 L190 195" />
+                <path d="M285 60 L300 160" />
+                <path d="M60 175 L190 195" />
+                <path d="M190 195 L300 160" />
+                <path d="M60 175 L120 262" />
+                <path d="M190 195 L120 262" />
+                <path d="M300 160 L245 255" />
+                <path d="M120 262 L245 255" />
+              </g>
+              {/* paper nodes */}
+              <g>
+                <circle cx="70" cy="60" r="30" fill="#0d4a52" stroke="#e8862d" strokeWidth="1.5" />
+                <foreignObject x="52" y="42" width="36" height="36">
+                  <FileText className="h-5 w-5 text-primary-foreground" />
+                </foreignObject>
+                <circle cx="285" cy="60" r="26" fill="#0d4a52" stroke="#7fc4c9" strokeWidth="1.5" />
+                <foreignObject x="269" y="44" width="32" height="32">
+                  <BookCopy className="h-4.5 w-4.5 text-primary-foreground" />
+                </foreignObject>
+                <circle cx="175" cy="95" r="34" fill="#e8862d" />
+                <foreignObject x="155" y="75" width="40" height="40">
+                  <Quote className="h-6 w-6 text-primary" />
+                </foreignObject>
+                <circle cx="60" cy="175" r="24" fill="#0d4a52" stroke="#7fc4c9" strokeWidth="1.5" />
+                <foreignObject x="45" y="160" width="30" height="30">
+                  <FileText className="h-4 w-4 text-primary-foreground" />
+                </foreignObject>
+                <circle cx="300" cy="160" r="28" fill="#0d4a52" stroke="#e8862d" strokeWidth="1.5" />
+                <foreignObject x="283" y="143" width="34" height="34">
+                  <BookMarked className="h-5 w-5 text-primary-foreground" />
+                </foreignObject>
+                <circle cx="190" cy="195" r="26" fill="#0d4a52" stroke="#7fc4c9" strokeWidth="1.5" />
+                <foreignObject x="173" y="178" width="34" height="34">
+                  <FileText className="h-5 w-5 text-primary-foreground" />
+                </foreignObject>
+                <circle cx="120" cy="262" r="22" fill="#0d4a52" stroke="#e8862d" strokeWidth="1.5" />
+                <circle cx="245" cy="255" r="24" fill="#0d4a52" stroke="#7fc4c9" strokeWidth="1.5" />
+                <foreignObject x="229" y="239" width="32" height="32">
+                  <Network className="h-4.5 w-4.5 text-primary-foreground" />
+                </foreignObject>
+              </g>
+              {/* citation count bubbles */}
+              <g fill="#e8862d">
+                <circle cx="100" cy="42" r="10" />
+                <circle cx="315" cy="88" r="8" />
+                <circle cx="34" cy="146" r="8" />
+                <circle cx="215" cy="168" r="9" />
+                <circle cx="95" cy="240" r="7" />
+                <circle cx="272" cy="228" r="8" />
+              </g>
+              <g
+                fontFamily="Inter, sans-serif"
+                fontSize="9"
+                fontWeight="700"
+                fill="#0d4a52"
+                textAnchor="middle"
+              >
+                <text x="100" y="45">24</text>
+                <text x="315" y="91">8</text>
+                <text x="34" y="149">5</text>
+                <text x="215" y="171">12</text>
+                <text x="95" y="243">3</text>
+                <text x="272" y="231">6</text>
+              </g>
+            </svg>
+          </Reveal>
+        </div>
+      </section>
 
       {/* Journal articles, year-wise */}
       <section className="mx-auto max-w-7xl px-5 py-24 sm:px-8">
@@ -108,10 +205,6 @@ export function Publications() {
           <h2 className="font-display mt-3 text-balance text-4xl font-semibold tracking-tight sm:text-5xl">
             Complete list, year by year.
           </h2>
-          <p className="mt-4 text-lg leading-relaxed text-muted-foreground">
-            Click any entry to open the article. The PI’s name is highlighted in each author list;
-            journal names appear in <strong className="font-semibold">bold italic</strong>.
-          </p>
         </Reveal>
 
         <div className="mt-14 space-y-16">
