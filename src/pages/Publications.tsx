@@ -72,11 +72,6 @@ function PublicationEntry({ pub, index }: { pub: Publication; index: number }) {
           <span className="text-muted-foreground">, {pub.details}</span>
         </p>
         <span className="mt-2 inline-flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
-          {pub.role && (
-            <span className="rounded-full bg-accent/10 px-2.5 py-1 font-semibold uppercase tracking-wide text-accent">
-              {pub.role}
-            </span>
-          )}
           <span className="inline-flex items-center gap-1 font-semibold text-primary">
             <ExternalLink className="h-3.5 w-3.5" />
             {pub.doi ? 'View article (DOI)' : 'Search on Google Scholar'}
