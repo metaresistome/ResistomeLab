@@ -4,20 +4,26 @@ import { isSnapshotMode } from '@/lib/snapshot'
 type ParticleType = 'bacteria' | 'virus' | 'fungus' | 'drug'
 
 type Particle = {
-  x: number
-  y: number
-  z: number
+  hx: number
+  hy: number
+  hz: number
+  fx: number
+  fy: number
+  fz: number
+  delay: number
   type: ParticleType
   size: number
   phase: number
   spin: number
 }
 
-const TYPE_META: Record<ParticleType, { color: string; label: string }> = {
-  bacteria: { color: '#159a94', label: 'Bacteria' },
-  virus: { color: '#e8862d', label: 'Viruses' },
-  fungus: { color: '#6a994e', label: 'Fungi' },
-  drug: { color: '#3d6fb4', label: 'Antimicrobials' },
+const GROUND_Y = -0.72
+
+const TYPE_META: Record<ParticleType, { color: string }> = {
+  bacteria: { color: '#159a94' },
+  virus: { color: '#e8862d' },
+  fungus: { color: '#6a994e' },
+  drug: { color: '#3d6fb4' },
 }
 
 function rand(a: number, b: number) {
@@ -62,10 +68,19 @@ function buildHumanParticles(): Particle[] {
           break
         }
       }
+      const hx = p[0] + rand(-0.012, 0.012)
+      const hy = p[1] + rand(-0.012, 0.012)
+      const hz = p[2] + rand(-0.012, 0.012)
+      // scattered resting spot on the "ground" for the collapse phase
+      const spread = rand(0.35, 1.15)
       parts.push({
-        x: p[0] + rand(-0.012, 0.012),
-        y: p[1] + rand(-0.012, 0.012),
-        z: p[2] + rand(-0.012, 0.012),
+        hx,
+        hy,
+        hz,
+        fx: hx * spread + rand(-0.28, 0.28),
+        fy: GROUND_Y + rand(0, 0.1),
+        fz: hz * spread + rand(-0.22, 0.22),
+        delay: rand(0, 0.45),
         type,
         size: rand(0.75, 1.35),
         phase: rand(0, Math.PI * 2),
@@ -234,7 +249,7 @@ export function ParticleHuman() {
       if (visible) {
         const t = (now - start) / 1000
         if (!staticFrame) {
-          angle = 0.6 + t * 0.25 + pointerX
+          angle = 0.6 + t * 0.22 + pointerX
         }
         const w = canvas.width
         const h = canvas.height
@@ -247,20 +262,86 @@ export function ParticleHuman() {
         const cosA = Math.cos(angle)
         const sinA = Math.sin(angle)
 
-        // project
+        // animation cycle (seconds)
+        const HOLD = 4.2
+        const FALL = 2.6
+        const REST = 1.6
+        const RISE = 2.8
+        const CYCLE = HOLD + FALL + REST + RISE + 0.6
+        const ctParam = new URLSearchParams(window.location.search).get('pcycle')
+        const ct = staticFrame
+          ? ctParam
+            ? parseFloat(ctParam) % CYCLE
+            : 0
+          : t % CYCLE
+
+        const clamp01 = (v: number) => (v < 0 ? 0 : v > 1 ? 1 : v)
+        const easeInQuad = (v: number) => v * v
+        const easeOutCubic = (v: number) => 1 - Math.pow(1 - v, 3)
+
+        // project every particle at its animated position
         const proj = particles.map((p) => {
-          const rx = p.x * cosA + p.z * sinA
-          const rz = -p.x * sinA + p.z * cosA
+          let px = p.hx
+          let py = p.hy
+          let pz = p.hz
+          let fallAmount = 0
+
+          if (!staticFrame || ctParam) {
+            if (ct < HOLD) {
+              // gentle breathing while formed
+              py += Math.sin(t * 1.3 + p.phase) * 0.012
+            } else if (ct < HOLD + FALL) {
+              // collapse: each particle drops with its own delay
+              const local = clamp01((ct - HOLD - p.delay * FALL * 0.7) / (FALL * 0.55))
+              const e = easeInQuad(local)
+              fallAmount = e
+              px = p.hx + (p.fx - p.hx) * e
+              py = p.hy + (p.fy - p.hy) * e
+              pz = p.hz + (p.fz - p.hz) * e
+            } else if (ct < HOLD + FALL + REST) {
+              // resting on the ground, faint shimmer
+              fallAmount = 1
+              px = p.fx + Math.sin(t * 2.2 + p.phase) * 0.006
+              py = p.fy
+              pz = p.fz
+            } else if (ct < HOLD + FALL + REST + RISE) {
+              // reform: rise back into the human
+              const local = clamp01((ct - HOLD - FALL - REST - p.delay * RISE * 0.7) / (RISE * 0.55))
+              const e = easeOutCubic(local)
+              fallAmount = 1 - e
+              px = p.fx + (p.hx - p.fx) * e
+              py = p.fy + (p.hy - p.fy) * e
+              pz = p.fz + (p.hz - p.fz) * e
+            } else {
+              py += Math.sin(t * 1.3 + p.phase) * 0.012
+            }
+          }
+
+          const rx = px * cosA + pz * sinA
+          const rz = -px * sinA + pz * cosA
           const s = f / (f + rz)
-          return { p, sx: cx + rx * scale * s, sy: cy - p.y * scale * s, depth: rz, s }
+          return { p, sx: cx + rx * scale * s, sy: cy - py * scale * s, depth: rz, s, fallAmount }
         })
         proj.sort((a, b) => b.depth - a.depth)
 
-        for (const { p, sx, sy, depth, s } of proj) {
+        // soft ground shadow that appears as particles fall
+        if (!staticFrame) {
+          const shadowAlpha = 0.1 * (proj.reduce((s, q) => s + q.fallAmount, 0) / proj.length)
+          if (shadowAlpha > 0.004) {
+            ctx.beginPath()
+            ctx.ellipse(cx, cy - GROUND_Y * scale + scale * 0.05, scale * 1.05, scale * 0.13, 0, 0, Math.PI * 2)
+            ctx.fillStyle = '#0d4a52'
+            ctx.globalAlpha = shadowAlpha
+            ctx.fill()
+            ctx.globalAlpha = 1
+          }
+        }
+
+        for (const { p, sx, sy, depth, s, fallAmount } of proj) {
           const twinkle = staticFrame ? 1 : 0.72 + 0.28 * Math.sin(t * 1.6 + p.phase)
           const alpha = Math.max(0.12, Math.min(1, (1.15 - (depth + 0.35) / 0.9) * 0.9)) * twinkle
           const r = Math.max(0.6, 2.6 * p.size * s * (Math.min(w, h) / 520))
-          const rot = staticFrame ? p.phase : p.phase + t * p.spin
+          const rot = staticFrame ? p.phase : p.phase + t * p.spin * (1 - fallAmount * 0.6)
           drawGlyph(ctx, p.type, sx, sy, r, rot, alpha)
         }
       }
@@ -294,17 +375,6 @@ export function ParticleHuman() {
   return (
     <div ref={wrapRef} className="relative h-[420px] w-full sm:h-[500px]">
       <canvas ref={canvasRef} className="absolute inset-0" aria-hidden="true" />
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-wrap items-center justify-center gap-x-5 gap-y-1.5">
-        {(Object.keys(TYPE_META) as ParticleType[]).map((t) => (
-          <span key={t} className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-            <span
-              className="h-2.5 w-2.5 rounded-full"
-              style={{ backgroundColor: TYPE_META[t].color }}
-            />
-            {TYPE_META[t].label}
-          </span>
-        ))}
-      </div>
     </div>
   )
 }
