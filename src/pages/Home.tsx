@@ -22,6 +22,7 @@ import {
 } from 'lucide-react'
 import { Reveal } from '@/components/Reveal'
 import { CtaBand } from '@/components/CtaBand'
+import { ParticleHuman } from '@/components/ParticleHuman'
 import {
   site,
   researchAreas,
@@ -223,6 +224,9 @@ export function Home() {
               Resistance is a system,{' '}
               <em className="text-primary">not a single sample</em>.
             </h2>
+            <div className="mt-8">
+              <ParticleHuman />
+            </div>
           </Reveal>
           <Reveal delay={0.12}>
             <p className="text-lg leading-relaxed text-muted-foreground">

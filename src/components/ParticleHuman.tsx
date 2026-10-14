@@ -1,299 +1,310 @@
 import { useEffect, useRef } from 'react'
+import { isSnapshotMode } from '@/lib/snapshot'
 
-/**
- * Live particle hero: hundreds of tiny particles — antibiotics and pathogens —
- * drift like a swarm, then converge to assemble a human figure, hold, and
- * scatter again. Reacts to the pointer.
- */
-
-type ParticleKind = 'pathogen' | 'drug'
+type ParticleType = 'bacteria' | 'virus' | 'fungus' | 'drug'
 
 type Particle = {
   x: number
   y: number
-  vx: number
-  vy: number
-  hx: number
-  hy: number
-  kind: ParticleKind
+  z: number
+  type: ParticleType
   size: number
   phase: number
   spin: number
 }
 
-type Phase = 'gather' | 'hold' | 'scatter'
-
-const PATHOGEN_COLORS = ['#4fd1c5', '#38b2ac', '#63e2be', '#2c9aa0']
-const DRUG_COLORS = ['#e08a4e', '#d97a3e', '#edb25f']
-
-/** Sample target points from a human silhouette drawn on an offscreen canvas. */
-function sampleHumanPoints(count: number): { x: number; y: number }[] {
-  const w = 220
-  const h = 260
-  const off = document.createElement('canvas')
-  off.width = w
-  off.height = h
-  const c = off.getContext('2d')!
-  c.fillStyle = '#fff'
-  c.strokeStyle = '#fff'
-
-  // Head
-  c.beginPath()
-  c.arc(w / 2, 40, 25, 0, Math.PI * 2)
-  c.fill()
-  // Torso
-  c.beginPath()
-  c.roundRect(w / 2 - 30, 66, 60, 92, 26)
-  c.fill()
-  // Arms
-  c.lineWidth = 15
-  c.lineCap = 'round'
-  c.beginPath()
-  c.moveTo(w / 2 - 26, 82)
-  c.lineTo(w / 2 - 46, 148)
-  c.moveTo(w / 2 + 26, 82)
-  c.lineTo(w / 2 + 46, 148)
-  c.stroke()
-  // Legs
-  c.lineWidth = 17
-  c.beginPath()
-  c.moveTo(w / 2 - 14, 154)
-  c.lineTo(w / 2 - 18, 240)
-  c.moveTo(w / 2 + 14, 154)
-  c.lineTo(w / 2 + 18, 240)
-  c.stroke()
-
-  const img = c.getImageData(0, 0, w, h).data
-  const pts: { x: number; y: number }[] = []
-  for (let y = 0; y < h; y += 2) {
-    for (let x = 0; x < w; x += 2) {
-      if (img[(y * w + x) * 4 + 3] > 120) {
-        pts.push({ x: x / w, y: y / h })
-      }
-    }
-  }
-  // Shuffle and pick
-  for (let i = pts.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1))
-    ;[pts[i], pts[j]] = [pts[j], pts[i]]
-  }
-  const step = Math.max(1, Math.floor(pts.length / count))
-  const picked: { x: number; y: number }[] = []
-  for (let i = 0; i < pts.length && picked.length < count; i += step) {
-    picked.push(pts[i])
-  }
-  return picked
+const TYPE_META: Record<ParticleType, { color: string; label: string }> = {
+  bacteria: { color: '#159a94', label: 'Bacteria' },
+  virus: { color: '#e8862d', label: 'Viruses' },
+  fungus: { color: '#6a994e', label: 'Fungi' },
+  drug: { color: '#3d6fb4', label: 'Antimicrobials' },
 }
 
-function drawParticle(ctx: CanvasRenderingContext2D, p: Particle, alpha: number) {
-  const color =
-    p.kind === 'pathogen'
-      ? PATHOGEN_COLORS[p.phase % PATHOGEN_COLORS.length]
-      : DRUG_COLORS[p.phase % DRUG_COLORS.length]
-  ctx.globalAlpha = alpha
-  ctx.fillStyle = color
-  ctx.strokeStyle = color
+function rand(a: number, b: number) {
+  return a + Math.random() * (b - a)
+}
 
-  if (p.kind === 'pathogen') {
-    // rod-shaped bacterium with tiny flagellum dots
+/** Sample a random point inside a capsule (segment p1->p2 with radius r). */
+function sampleCapsule(
+  x1: number, y1: number, z1: number,
+  x2: number, y2: number, z2: number,
+  r: number,
+): [number, number, number] {
+  const t = Math.random()
+  const cx = x1 + (x2 - x1) * t
+  const cy = y1 + (y2 - y1) * t
+  const cz = z1 + (z2 - z1) * t
+  // random direction
+  let dx = rand(-1, 1), dy = rand(-1, 1), dz = rand(-1, 1)
+  const len = Math.sqrt(dx * dx + dy * dy + dz * dz) || 1
+  const dist = r * Math.cbrt(Math.random())
+  dx = (dx / len) * dist
+  dy = (dy / len) * dist
+  dz = (dz / len) * dist
+  return [cx + dx, cy + dy, cz + dz]
+}
+
+function sampleSphere(cx: number, cy: number, cz: number, r: number): [number, number, number] {
+  return sampleCapsule(cx, cy, cz, cx, cy, cz, r)
+}
+
+function buildHumanParticles(): Particle[] {
+  const parts: Particle[] = []
+  const push = (p: [number, number, number], count: number, weights: [ParticleType, number][]) => {
+    for (let i = 0; i < count; i++) {
+      const roll = Math.random() * weights.reduce((s, w) => s + w[1], 0)
+      let acc = 0
+      let type: ParticleType = weights[0][0]
+      for (const [t, w] of weights) {
+        acc += w
+        if (roll <= acc) {
+          type = t
+          break
+        }
+      }
+      parts.push({
+        x: p[0] + rand(-0.012, 0.012),
+        y: p[1] + rand(-0.012, 0.012),
+        z: p[2] + rand(-0.012, 0.012),
+        type,
+        size: rand(0.75, 1.35),
+        phase: rand(0, Math.PI * 2),
+        spin: rand(-0.6, 0.6),
+      })
+    }
+  }
+
+  const core: [ParticleType, number][] = [
+    ['bacteria', 0.42],
+    ['virus', 0.22],
+    ['fungus', 0.12],
+    ['drug', 0.24],
+  ]
+
+  // head
+  for (let i = 0; i < 170; i++) push(sampleSphere(0, 1.52, 0, 0.21), 1, core)
+  // neck
+  for (let i = 0; i < 30; i++) push(sampleCapsule(0, 1.3, 0, 0, 1.38, 0, 0.09), 1, core)
+  // torso (chest)
+  for (let i = 0; i < 330; i++) push(sampleCapsule(0, 0.78, 0, 0, 1.28, 0, 0.3), 1, core)
+  // hips
+  for (let i = 0; i < 170; i++) push(sampleCapsule(0, 0.5, 0, 0, 0.76, 0, 0.25), 1, core)
+  // arms
+  for (let i = 0; i < 120; i++) push(sampleCapsule(-0.34, 1.24, 0, -0.46, 0.72, 0, 0.085), 1, core)
+  for (let i = 0; i < 120; i++) push(sampleCapsule(0.34, 1.24, 0, 0.46, 0.72, 0, 0.085), 1, core)
+  // forearms + hands
+  for (let i = 0; i < 90; i++) push(sampleCapsule(-0.46, 0.72, 0, -0.5, 0.32, 0, 0.07), 1, core)
+  for (let i = 0; i < 90; i++) push(sampleCapsule(0.46, 0.72, 0, 0.5, 0.32, 0, 0.07), 1, core)
+  // legs
+  for (let i = 0; i < 200; i++) push(sampleCapsule(-0.13, 0.48, 0, -0.15, -0.15, 0, 0.115), 1, core)
+  for (let i = 0; i < 200; i++) push(sampleCapsule(0.13, 0.48, 0, 0.15, -0.15, 0, 0.115), 1, core)
+  // shins + feet
+  for (let i = 0; i < 130; i++) push(sampleCapsule(-0.15, -0.15, 0, -0.16, -0.62, 0, 0.085), 1, core)
+  for (let i = 0; i < 130; i++) push(sampleCapsule(0.15, -0.15, 0, 0.16, -0.62, 0, 0.085), 1, core)
+  for (let i = 0; i < 40; i++) push(sampleCapsule(-0.16, -0.66, 0.05, -0.16, -0.66, 0.12, 0.06), 1, core)
+  for (let i = 0; i < 40; i++) push(sampleCapsule(0.16, -0.66, 0.05, 0.16, -0.66, 0.12, 0.06), 1, core)
+
+  return parts
+}
+
+function drawGlyph(
+  ctx: CanvasRenderingContext2D,
+  type: ParticleType,
+  x: number,
+  y: number,
+  r: number,
+  rot: number,
+  alpha: number,
+) {
+  const c = TYPE_META[type].color
+  ctx.globalAlpha = alpha
+  ctx.strokeStyle = c
+  ctx.fillStyle = c
+  ctx.lineWidth = Math.max(1, r * 0.32)
+
+  if (type === 'bacteria') {
+    // rod shape
     ctx.save()
-    ctx.translate(p.x, p.y)
-    ctx.rotate(p.spin)
+    ctx.translate(x, y)
+    ctx.rotate(rot)
     ctx.beginPath()
-    ctx.roundRect(-p.size * 1.4, -p.size * 0.55, p.size * 2.8, p.size * 1.1, p.size * 0.55)
+    ctx.roundRect(-r * 1.5, -r * 0.55, r * 3, r * 1.1, r * 0.55)
+    ctx.globalAlpha = alpha * 0.85
     ctx.fill()
     ctx.restore()
-  } else {
-    // antibiotic: plus-shaped molecule / capsule
+  } else if (type === 'virus') {
+    // spiked circle
     ctx.save()
-    ctx.translate(p.x, p.y)
-    ctx.rotate(p.spin)
-    const s = p.size * 1.5
-    ctx.lineWidth = p.size * 0.62
-    ctx.lineCap = 'round'
+    ctx.translate(x, y)
+    ctx.rotate(rot)
     ctx.beginPath()
-    ctx.moveTo(-s, 0)
-    ctx.lineTo(s, 0)
-    ctx.moveTo(0, -s)
-    ctx.lineTo(0, s)
+    for (let i = 0; i < 8; i++) {
+      const a = (i / 8) * Math.PI * 2
+      ctx.moveTo(Math.cos(a) * r * 0.8, Math.sin(a) * r * 0.8)
+      ctx.lineTo(Math.cos(a) * r * 1.45, Math.sin(a) * r * 1.45)
+    }
     ctx.stroke()
+    ctx.beginPath()
+    ctx.arc(0, 0, r * 0.8, 0, Math.PI * 2)
+    ctx.globalAlpha = alpha * 0.9
+    ctx.fill()
+    ctx.restore()
+  } else if (type === 'fungus') {
+    // mushroom
+    ctx.save()
+    ctx.translate(x, y)
+    ctx.beginPath()
+    ctx.arc(0, -r * 0.25, r * 1.05, Math.PI, 0)
+    ctx.closePath()
+    ctx.globalAlpha = alpha * 0.9
+    ctx.fill()
+    ctx.globalAlpha = alpha
+    ctx.fillRect(-r * 0.28, -r * 0.2, r * 0.56, r * 1.2)
+    ctx.restore()
+  } else {
+    // drug: capsule
+    ctx.save()
+    ctx.translate(x, y)
+    ctx.rotate(rot)
+    ctx.beginPath()
+    ctx.roundRect(-r * 1.4, -r * 0.6, r * 2.8, r * 1.2, r * 0.6)
+    ctx.globalAlpha = alpha * 0.85
+    ctx.fill()
     ctx.restore()
   }
   ctx.globalAlpha = 1
 }
 
-export function ParticleHuman({ className = '' }: { className?: string }) {
+export function ParticleHuman() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const wrapRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const canvas = canvasRef.current
-    if (!canvas) return
+    const wrap = wrapRef.current
+    if (!canvas || !wrap) return
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
+    const particles = buildHumanParticles()
+    const snapshot = isSnapshotMode()
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const staticFrame = snapshot || reduceMotion
+
     let raf = 0
     let running = true
-    let width = 0
-    let height = 0
-    let particles: Particle[] = []
-    let targets: { x: number; y: number }[] = []
-    let phase: Phase = 'gather'
-    let phaseStarted = performance.now()
-    const mouse = { x: -9999, y: -9999 }
+    let visible = true
+    let angle = 0.6
+    let pointerX = 0
+    let lastW = 0
+    let lastH = 0
+    const start = performance.now()
 
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-
-    const DURATIONS: Record<Phase, number> = {
-      gather: 2600,
-      hold: 9000,
-      scatter: 2100,
-    }
-
-    function build() {
-      const rect = canvas!.parentElement!.getBoundingClientRect()
+    const resize = () => {
       const dpr = Math.min(window.devicePixelRatio || 1, 2)
-      width = rect.width
-      height = rect.height
-      canvas!.width = Math.floor(width * dpr)
-      canvas!.height = Math.floor(height * dpr)
-      canvas!.style.width = `${width}px`
-      canvas!.style.height = `${height}px`
-      ctx!.setTransform(dpr, 0, 0, dpr, 0, 0)
-
-      const count = width < 420 ? 420 : 640
-      targets = sampleHumanPoints(count)
-      particles = targets.map((t, i) => ({
-        x: Math.random() * width,
-        y: Math.random() * height,
-        vx: (Math.random() - 0.5) * 0.6,
-        vy: (Math.random() - 0.5) * 0.6,
-        hx: t.x * width * 0.86 + width * 0.07,
-        hy: t.y * height * 0.9 + height * 0.05,
-        kind: Math.random() < 0.72 ? 'pathogen' : 'drug',
-        size: 1.6 + Math.random() * 1.9,
-        phase: i,
-        spin: Math.random() * Math.PI * 2,
-      }))
+      const { width, height } = wrap.getBoundingClientRect()
+      const w = Math.max(1, Math.round(width * dpr))
+      const h = Math.max(1, Math.round(height * dpr))
+      if (w === lastW && h === lastH) return
+      lastW = w
+      lastH = h
+      canvas.width = w
+      canvas.height = h
+      canvas.style.width = `${width}px`
+      canvas.style.height = `${height}px`
     }
 
-    function tick(now: number) {
-      if (!running) return
-      raf = requestAnimationFrame(tick)
-
-      if (now - phaseStarted > DURATIONS[phase]) {
-        phase = phase === 'gather' ? 'hold' : phase === 'hold' ? 'scatter' : 'gather'
-        phaseStarted = now
-        if (phase === 'scatter') {
-          for (const p of particles) {
-            const a = Math.random() * Math.PI * 2
-            const f = 0.8 + Math.random() * 1.6
-            p.vx += Math.cos(a) * f
-            p.vy += Math.sin(a) * f
-          }
-        }
-      }
-
-      ctx!.clearRect(0, 0, width, height)
-
-      const gatherK = phase === 'gather' ? 0.012 : 0.03
-      const damping = phase === 'scatter' ? 0.965 : 0.86
-
-      for (const p of particles) {
-        if (phase === 'scatter') {
-          p.vx += (Math.random() - 0.5) * 0.12
-          p.vy += (Math.random() - 0.5) * 0.12
-          if (p.x < 0) p.x += width
-          if (p.x > width) p.x -= width
-          if (p.y < 0) p.y += height
-          if (p.y > height) p.y -= height
-        } else {
-          const wobble =
-            phase === 'hold' ? 0.9 : 0
-          const tx = p.hx + (wobble ? Math.sin(now / 640 + p.phase) * wobble : 0)
-          const ty = p.hy + (wobble ? Math.cos(now / 700 + p.phase * 1.3) * wobble : 0)
-          p.vx += (tx - p.x) * gatherK
-          p.vy += (ty - p.y) * gatherK
-        }
-
-        // pointer repulsion
-        const dx = p.x - mouse.x
-        const dy = p.y - mouse.y
-        const d2 = dx * dx + dy * dy
-        if (d2 < 10000) {
-          const d = Math.sqrt(d2) || 1
-          const f = ((100 - d) / 100) * 1.35
-          p.vx += (dx / d) * f
-          p.vy += (dy / d) * f
-        }
-
-        p.vx *= damping
-        p.vy *= damping
-        p.x += p.vx
-        p.y += p.vy
-        p.spin += 0.004 * (p.kind === 'drug' ? 1.6 : 1)
-
-        const twinkle = 0.55 + 0.45 * Math.sin(now / 500 + p.phase * 2.1)
-        drawParticle(ctx!, p, phase === 'scatter' ? 0.85 : 0.55 + 0.45 * twinkle)
-      }
-    }
-
-    build()
-
-    if (reduced) {
-      // Static assembled figure for reduced-motion users
-      phase = 'hold'
-      for (let i = 0; i < 90; i++) {
-        for (const p of particles) {
-          p.x += (p.hx - p.x) * 0.09
-          p.y += (p.hy - p.y) * 0.09
-        }
-      }
-      ctx.clearRect(0, 0, width, height)
-      for (const p of particles) drawParticle(ctx, p, 0.95)
-    } else {
-      raf = requestAnimationFrame(tick)
-    }
-
-    const onMove = (e: PointerEvent) => {
-      const rect = canvas!.getBoundingClientRect()
-      mouse.x = e.clientX - rect.left
-      mouse.y = e.clientY - rect.top
-    }
-    const onLeave = () => {
-      mouse.x = -9999
-      mouse.y = -9999
-    }
-    const ro = new ResizeObserver(() => build())
-    ro.observe(canvas.parentElement!)
     const io = new IntersectionObserver(
       ([entry]) => {
-        running = entry.isIntersecting && !reduced
-        if (running) {
-          cancelAnimationFrame(raf)
-          raf = requestAnimationFrame(tick)
-        } else {
-          cancelAnimationFrame(raf)
-        }
+        visible = entry.isIntersecting
       },
       { threshold: 0.05 },
     )
-    io.observe(canvas)
-    canvas.addEventListener('pointermove', onMove)
-    canvas.addEventListener('pointerleave', onLeave)
+    io.observe(wrap)
+    const cleanupFns: (() => void)[] = [() => io.disconnect()]
+
+    const onPointer = (e: PointerEvent) => {
+      const rect = wrap.getBoundingClientRect()
+      pointerX = ((e.clientX - rect.left) / rect.width - 0.5) * 0.7
+    }
+    wrap.addEventListener('pointermove', onPointer)
+
+    const render = (now: number) => {
+      if (!running) return
+      if (visible) {
+        const t = (now - start) / 1000
+        if (!staticFrame) {
+          angle = 0.6 + t * 0.25 + pointerX
+        }
+        const w = canvas.width
+        const h = canvas.height
+        ctx.clearRect(0, 0, w, h)
+
+        const scale = Math.min(w, h) * 0.85 / 2.45
+        const cx = w / 2
+        const cy = h / 2 + 0.505 * scale
+        const f = 3.4 // perspective distance
+        const cosA = Math.cos(angle)
+        const sinA = Math.sin(angle)
+
+        // project
+        const proj = particles.map((p) => {
+          const rx = p.x * cosA + p.z * sinA
+          const rz = -p.x * sinA + p.z * cosA
+          const s = f / (f + rz)
+          return { p, sx: cx + rx * scale * s, sy: cy - p.y * scale * s, depth: rz, s }
+        })
+        proj.sort((a, b) => b.depth - a.depth)
+
+        for (const { p, sx, sy, depth, s } of proj) {
+          const twinkle = staticFrame ? 1 : 0.72 + 0.28 * Math.sin(t * 1.6 + p.phase)
+          const alpha = Math.max(0.12, Math.min(1, (1.15 - (depth + 0.35) / 0.9) * 0.9)) * twinkle
+          const r = Math.max(0.6, 2.6 * p.size * s * (Math.min(w, h) / 520))
+          const rot = staticFrame ? p.phase : p.phase + t * p.spin
+          drawGlyph(ctx, p.type, sx, sy, r, rot, alpha)
+        }
+      }
+      if (!staticFrame) raf = requestAnimationFrame(render)
+    }
+
+    if (staticFrame) {
+      // size the canvas once layout has settled, then paint a single frame
+      requestAnimationFrame(() =>
+        requestAnimationFrame(() => {
+          resize()
+          render(start + 800)
+        }),
+      )
+    } else {
+      resize()
+      const ro = new ResizeObserver(resize)
+      ro.observe(wrap)
+      raf = requestAnimationFrame(render)
+      cleanupFns.push(() => ro.disconnect())
+    }
 
     return () => {
       running = false
       cancelAnimationFrame(raf)
-      ro.disconnect()
-      io.disconnect()
-      canvas.removeEventListener('pointermove', onMove)
-      canvas.removeEventListener('pointerleave', onLeave)
+      cleanupFns.forEach((fn) => fn())
+      wrap.removeEventListener('pointermove', onPointer)
     }
   }, [])
 
   return (
-    <div className={`relative ${className}`}>
+    <div ref={wrapRef} className="relative h-[420px] w-full sm:h-[500px]">
       <canvas ref={canvasRef} className="absolute inset-0" aria-hidden="true" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-wrap items-center justify-center gap-x-5 gap-y-1.5">
+        {(Object.keys(TYPE_META) as ParticleType[]).map((t) => (
+          <span key={t} className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+            <span
+              className="h-2.5 w-2.5 rounded-full"
+              style={{ backgroundColor: TYPE_META[t].color }}
+            />
+            {TYPE_META[t].label}
+          </span>
+        ))}
+      </div>
     </div>
   )
 }
