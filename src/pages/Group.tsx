@@ -16,6 +16,47 @@ export function Group() {
         subtitle="Make expertise visible when it is ready to be shared — a connected agenda for AMR, pathogen genomics, and One Health surveillance."
       />
 
+      {/* Faculty profile */}
+      <section className="mx-auto max-w-7xl px-5 pt-16 sm:px-8" aria-label="Faculty profile">
+        <Reveal>
+          <article className="grid overflow-hidden rounded-3xl border border-border bg-card md:grid-cols-[0.8fr_1.2fr]">
+            <div className="flex min-h-80 items-center justify-center bg-secondary/60 p-6">
+              <img
+                src="/images/team/professor-jiao-xiaoyang.jpg"
+                alt="Professor Jiao Xiaoyang"
+                className="max-h-[26rem] w-full object-contain object-top"
+              />
+            </div>
+            <div className="flex flex-col justify-center p-8 sm:p-10 lg:p-14">
+              <p className="text-xs font-semibold uppercase tracking-[0.28em] text-accent">
+                Faculty
+              </p>
+              <h2 className="font-display mt-3 text-balance text-3xl font-semibold tracking-tight sm:text-4xl">
+                Professor Jiao Xiaoyang
+              </h2>
+              <p className="mt-2 text-base font-medium text-muted-foreground">
+                Full Professor · Department of Cell Biology and Genetics
+              </p>
+              <p className="mt-5 max-w-2xl text-base leading-relaxed text-muted-foreground">
+                Professor Jiao Xiaoyang is a Full Professor in the Department of Cell Biology and
+                Genetics. Her expertise includes antimicrobial resistance (AMR) and
+                microbiota-related research.
+              </p>
+              <div className="mt-6 flex flex-wrap gap-2">
+                {['Antimicrobial resistance (AMR)', 'Microbiota'].map((expertise) => (
+                  <span
+                    key={expertise}
+                    className="rounded-full bg-secondary px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-secondary-foreground"
+                  >
+                    {expertise}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </article>
+        </Reveal>
+      </section>
+
       {/* Master's students */}
       <section className="mx-auto max-w-7xl px-5 py-24 sm:px-8">
         <Reveal className="max-w-2xl">
